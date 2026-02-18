@@ -12,12 +12,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com">
 
-    <!-- GOOGLE ANALYTICS PLACEHOLDER (Paste your G-XXXXXXXXXX script here later) -->
+    <!-- GOOGLE ANALYTICS PLACEHOLDER -->
+    <script async src="https://www.googletagmanager.com"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
     
     <style>
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); }
         .hero-gradient { background: radial-gradient(circle at top right, #3730a3, transparent); }
         .text-glow { text-shadow: 0 0 20px rgba(129, 140, 248, 0.5); }
+        .card-hover:hover { transform: translateY(-10px); border-color: #6366f1; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500 selection:text-white">
@@ -27,14 +35,15 @@
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <span class="text-xl font-bold tracking-tighter text-indigo-400">SAMARTH<span class="text-white">.LABS</span></span>
             <div class="hidden md:flex space-x-8 text-xs uppercase tracking-[0.2em] font-medium">
-                <a href="#flagship" class="hover:text-indigo-400 transition">Flagship Research</a>
-                <a href="#breadth" class="hover:text-indigo-400 transition">Project Breadth</a>
+                <a href="#flagship" class="hover:text-indigo-400 transition">Flagship</a>
+                <a href="#philosophy" class="hover:text-indigo-400 transition">Philosophy</a>
+                <a href="#breadth" class="hover:text-indigo-400 transition">Breadth</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative pt-40 pb-20 px-6 overflow-hidden hero-gradient">
+    <section class="relative pt-48 pb-32 px-6 overflow-hidden hero-gradient">
         <div class="max-w-4xl mx-auto text-center relative z-10">
             <div class="inline-block px-4 py-1.5 mb-6 text-xs font-semibold tracking-widest text-indigo-400 uppercase bg-indigo-400/10 border border-indigo-400/20 rounded-full">
                 Independent Computational Researcher
@@ -43,18 +52,18 @@
                 Exploring the <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400 text-glow">Spacetime</span> of AI.
             </h1>
             <p class="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                Interdisciplinary scientist focused on solving theoretical physics and optimization problems through custom-built computational frameworks.
+                Solving theoretical physics and optimization problems through custom-built computational frameworks and first-principles thinking.
             </p>
             <div class="mt-10 flex flex-wrap justify-center gap-4">
                 <a href="#flagship" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-lg font-bold transition shadow-lg shadow-indigo-500/20">View Research</a>
-                <a href="https://github.com" class="border border-slate-700 hover:border-indigo-400 px-8 py-4 rounded-lg font-bold transition flex items-center gap-2">
+                <a href="https://github.com" target="_blank" class="border border-slate-700 hover:border-indigo-400 px-8 py-4 rounded-lg font-bold transition flex items-center gap-2">
                     <i class="fab fa-github"></i> Verified Source Code
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Flagship Projects (The Spike) -->
+    <!-- Flagship Projects -->
     <section id="flagship" class="max-w-6xl mx-auto px-6 py-24">
         <div class="flex items-center gap-4 mb-16">
             <h2 class="text-3xl font-bold text-white tracking-tight">Flagship Research</h2>
@@ -63,40 +72,53 @@
 
         <div class="grid lg:grid-cols-3 gap-10">
             <!-- Project 1 -->
-            <div class="group relative bg-slate-900 rounded-3xl border border-slate-800 p-8 hover:border-indigo-500 transition-all duration-500">
+            <div class="group relative bg-slate-900 rounded-3xl border border-slate-800 p-8 transition-all duration-500 card-hover">
                 <div class="mb-6 text-indigo-500 text-4xl"><i class="fas fa-circle-notch"></i></div>
-                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-indigo-400">Black Hole Light Bending</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-6">Developed a ray-tracing engine to simulate photon trajectories in Schwarzschild spacetime. Solved geodesic equations using 4th-order Runge-Kutta integration to visualize gravitational lensing.</p>
+                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-indigo-400 uppercase tracking-tight">Black Hole Light Bending</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">Implemented a relativistic ray-tracing engine to simulate photon geodesics in Schwarzschild spacetime. Solved equations using 4th-order Runge-Kutta integration to visualize gravitational lensing.</p>
                 <div class="flex gap-2 mb-8">
-                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 uppercase tracking-widest text-slate-400">General Relativity</span>
-                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 uppercase tracking-widest text-slate-400">Python</span>
+                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 text-slate-400 uppercase">Physics</span>
+                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 text-slate-400 uppercase">Python</span>
                 </div>
-                <a href="https://github.com" class="text-indigo-400 text-sm font-bold flex items-center gap-2 group-hover:gap-4 transition-all">Research Code <i class="fas fa-arrow-right"></i></a>
+                <a href="https://github.com" class="text-indigo-400 text-sm font-bold flex items-center gap-2">Research Code <i class="fas fa-arrow-right"></i></a>
             </div>
 
             <!-- Project 2 -->
-            <div class="group relative bg-slate-900 rounded-3xl border border-slate-800 p-8 hover:border-emerald-500 transition-all duration-500">
+            <div class="group relative bg-slate-900 rounded-3xl border border-slate-800 p-8 transition-all duration-500 card-hover">
                 <div class="mb-6 text-emerald-500 text-4xl"><i class="fas fa-wave-square"></i></div>
-                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-emerald-400">LIGO Signal Denoising</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-6">Implemented a signal-processing pipeline to isolate gravitational wave signatures. Utilized custom Bandpass transforms to filter seismic and thermal noise from raw sensor data.</p>
+                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-emerald-400 uppercase tracking-tight">LIGO Signal Denoising</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">Developed a digital signal processing pipeline for GW data. Applied whitening filters and bandpass transforms to isolate gravitational strain from seismic noise floors.</p>
                 <div class="flex gap-2 mb-8">
-                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 uppercase tracking-widest text-slate-400">Signal Processing</span>
-                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 uppercase tracking-widest text-slate-400">LIGO Data</span>
+                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 text-slate-400 uppercase">Signal Processing</span>
+                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 text-slate-400 uppercase">NumPy</span>
                 </div>
-                <a href="https://github.com" class="text-emerald-400 text-sm font-bold flex items-center gap-2 group-hover:gap-4 transition-all">Research Code <i class="fas fa-arrow-right"></i></a>
+                <a href="https://github.com" class="text-emerald-400 text-sm font-bold flex items-center gap-2">Research Code <i class="fas fa-arrow-right"></i></a>
             </div>
 
             <!-- Project 3 -->
-            <div class="group relative bg-slate-900 rounded-3xl border border-slate-800 p-8 hover:border-purple-500 transition-all duration-500">
+            <div class="group relative bg-slate-900 rounded-3xl border border-slate-800 p-8 transition-all duration-500 card-hover">
                 <div class="mb-6 text-purple-500 text-4xl"><i class="fas fa-brain"></i></div>
-                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-purple-400">NN from Scratch</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-6">Architected a deep neural network using first-principles calculus. Built backpropagation and gradient descent without high-level APIs to master optimization theory.</p>
+                <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-purple-400 uppercase tracking-tight">NN From Scratch</h3>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">Engineered a deep neural network from first-principles calculus. Developed custom backpropagation and SGD algorithms without high-level APIs to master optimization theory.</p>
                 <div class="flex gap-2 mb-8">
-                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 uppercase tracking-widest text-slate-400">Neural Nets</span>
-                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 uppercase tracking-widest text-slate-400">Calculus</span>
+                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 text-slate-400 uppercase">AI Architecture</span>
+                    <span class="text-[10px] px-2 py-1 bg-slate-800 rounded border border-slate-700 text-slate-400 uppercase">Calculus</span>
                 </div>
-                <a href="https://github.com" class="text-purple-400 text-sm font-bold flex items-center gap-2 group-hover:gap-4 transition-all">Research Code <i class="fas fa-arrow-right"></i></a>
+                <a href="https://github.com" class="text-purple-400 text-sm font-bold flex items-center gap-2">Research Code <i class="fas fa-arrow-right"></i></a>
             </div>
+        </div>
+    </section>
+
+    <!-- Research Philosophy (The Growth Narrative) -->
+    <section id="philosophy" class="max-w-4xl mx-auto px-6 py-24 border-t border-slate-900">
+        <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-3xl p-10">
+            <h2 class="text-3xl font-bold text-white mb-6 tracking-tight italic">On Resilience and Trajectory</h2>
+            <p class="text-slate-300 leading-relaxed mb-6">
+                My academic journey is defined by an **upward trajectory**. While my 10th-grade transcript reflects a brief period of adaptation, it served as the catalyst for my deep-dive into independent research.
+            </p>
+            <p class="text-slate-300 leading-relaxed">
+                I shifted my focus from rote learning to **computational synthesis**, building the 8 projects seen here. This shift proved my capacity for rigorous, self-directed intellectual work—the kind required at institutions like MIT and Stanford.
+            </p>
         </div>
     </section>
 
@@ -127,9 +149,14 @@
 
     <!-- Footer -->
     <footer class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900 text-center">
-        <p class="text-slate-500 text-xs mb-4 tracking-widest uppercase">Verified Research Portfolio • 2026</p>
-        <p class="text-slate-300 font-medium">Samarth Tripathi | <a href="mailto:samarth.tripathi.edu@gmail.com" class="text-indigo-400">Contact Research Office</a></p>
+        <p class="text-slate-500 text-xs mb-4 tracking-widest uppercase font-bold">Research Portfolio • Class of 2026</p>
+        <p class="text-slate-400">Samarth Tripathi | <a href="mailto:samarth.tripathi.edu@gmail.com" class="text-indigo-400 hover:underline">Email Research Office</a></p>
+        <div class="mt-8 flex justify-center gap-6 text-slate-500">
+            <a href="https://github.com" target="_blank" class="hover:text-white transition"><i class="fab fa-github fa-lg"></i></a>
+            <a href="mailto:samarth.tripathi.edu@gmail.com" class="hover:text-white transition"><i class="fas fa-envelope fa-lg"></i></a>
+        </div>
     </footer>
 
 </body>
 </html>
+
