@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Samarth Tripathi — Independent Researcher</title>
+  <meta name="description" content="Samarth Tripathi — Independent researcher in computational physics, gravitational wave analysis, and machine learning. Portfolio of 8 research projects with first-principles derivations." />
+  <meta name="keywords" content="Samarth Tripathi, computational physics, black hole simulation, LIGO, neural network, machine learning, general relativity, independent research" />
+  <meta name="author" content="Samarth Tripathi" />
+  <meta property="og:title" content="Samarth Tripathi — Independent Researcher" />
+  <meta property="og:description" content="Portfolio of independent research in computational physics, signal processing, and machine learning." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #e8d5a3;
+      --accent2: #7eb8c9;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --card: #13131c;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(126,184,201,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-bio {
+      max-width: 520px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.6s;
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.8s;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.6rem;
+      border-radius: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0a0f;
+      font-weight: 500;
+    }
+    .btn-primary:hover { background: #f0e0b0; transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent2);
+      border: 1px solid var(--accent2);
+    }
+    .btn-outline:hover { background: rgba(126,184,201,0.08); transform: translateY(-1px); }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem; left: 4rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 1.2s;
+    }
+    .hero-scroll::after {
+      content: '';
+      width: 40px; height: 1px;
+      background: var(--muted);
+    }
+
+    /* ── SECTION BASE ── */
+    section {
+      padding: 6rem 4rem;
+      position: relative;
+    }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.8rem;
+    }
+
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--text);
+      margin-bottom: 3rem;
+      line-height: 1.1;
+    }
+
+    /* ── MAIN PROJECTS ── */
+    #research { background: var(--surface); border-top: 1px solid var(--border); }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .project-card {
+      background: var(--card);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .project-card:hover { background: #16161f; }
+    .project-card:hover::before { transform: scaleX(1); }
+
+    .project-number {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    .project-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.35rem;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .project-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1px;
+      background: rgba(232,213,163,0.08);
+      color: var(--accent);
+      border: 1px solid rgba(232,213,163,0.15);
+    }
+
+    .tag.blue {
+      background: rgba(126,184,201,0.08);
+      color: var(--accent2);
+      border-color: rgba(126,184,201,0.15);
+    }
+
+    .project-links {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-sm {
+      padding: 0.45rem 1rem;
+      font-size: 0.68rem;
+    }
+
+    /* ── OTHER PROJECTS ── */
+    #projects { border-top: 1px solid var(--border); }
+
+    .other-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .other-card {
+      background: var(--bg);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: background 0.2s;
+    }
+    .other-card:hover { background: var(--card); }
+
+    .other-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .other-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    /* ── ABOUT STRIP ── */
+    #about {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .about-text {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.9;
+    }
+
+    .about-text strong { color: var(--text); font-weight: 500; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .stat-box {
+      background: var(--card);
+      padding: 1.8rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      color: var(--accent);
+      display: block;
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      display: block;
+    }
+
+    /* ── CONTACT ── */
+    #contact { border-top: 1px solid var(--border); text-align: center; }
+
+    .contact-inner {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .contact-inner p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 7rem 1.5rem 3rem; }
+      section { padding: 4rem 1.5rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+      .hero-scroll { left: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">Samarth Tripathi</a>
+    <ul class="nav-links">
+      <li><a href="#research">Research</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <p class="hero-label">Independent Researcher — 2023–Present</p>
+    <h1>Samarth<br><em>Tripathi</em></h1>
+    <p class="hero-bio">
+      Independent researcher working at the intersection of computational physics,
+      gravitational wave signal processing, and machine learning —
+      all derived from first principles, prior to formal university study.
+    </p>
+    <div class="hero-links">
+      <a href="#research" class="btn btn-primary">View Research</a>
+      <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline">GitHub</a>
+    </div>
+    <div class="hero-scroll">Scroll to explore</div>
+  </section>
+
+  <!-- MAIN RESEARCH PAPERS -->
+  <section id="research">
+    <p class="section-label reveal">Primary Research</p>
+    <h2 class="section-title reveal">Three IEEE-Format<br>Research Papers</h2>
+
+    <div class="projects-grid">
+
+      <!-- PROJECT 1 -->
+      <div class="project-card reveal">
+        <span class="project-number">01 — Computational Physics</span>
+        <h3 class="project-title">Computational Simulation of Light Trajectories Near Black Holes</h3>
+        <p class="project-desc">
+          A progressive study from Newtonian approximation to Schwarzschild GR and Kerr spacetime.
+          Governing equations derived independently from first principles beginning July 2023.
+          Quantitatively verifies the photon sphere at r = 1.5Rs with sub-10⁻³ relative error
+          using RK4 integration. Dated notebook derivations included as documentary evidence.
+        </p>
+        <div class="project-tags">
+          <span class="tag">General Relativity</span>
+          <span class="tag">Schwarzschild Metric</span>
+          <span class="tag">RK4 Integration</span>
+          <span class="tag blue">Python</span>
+          <span class="tag blue">NumPy</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+          <a href="./papers/PROJECT - 1 BLACKHOLE LIGHT BENDING ( COMPUTATIONAL GR ) Latex File.pdf" target="_blank" class="btn btn-primary btn-sm">Read Paper</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 2 -->
+      <div class="project-card reveal">
+        <span class="project-number">02 — Signal Processing</span>
+        <h3 class="project-title">Gravitational Wave Signal Extraction from Real LIGO Data</h3>
+        <p class="project-desc">
+          Computational analysis pipeline applied to real LIGO H1 strain data (GW150914).
+          Framework covers raw data visualisation, FFT spectral analysis, 4th-order Butterworth
+          band-pass filtering at 50–600 Hz, and detection significance estimation.
+          Fourier transform and SNR proxy equations derived from first principles, August 2023.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Signal Processing</span>
+          <span class="tag">Fourier Analysis</span>
+          <span class="tag">LIGO H1 Data</span>
+          <span class="tag blue">Python</span>
+          <span class="tag blue">SciPy</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+          <a href="./papers/PROJECT 2  GRAVITATIONAL WAVE DENOISING ( REAL WORLD LIGO ) LATEX FILE.pdf" target="_blank" class="btn btn-primary btn-sm">Read Paper</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 3 -->
+      <div class="project-card reveal">
+        <span class="project-number">03 — Machine Learning</span>
+        <h3 class="project-title">Neural Network from Scratch: XOR Classification</h3>
+        <p class="project-desc">
+          Fully functional neural network built using only NumPy. Covers forward propagation,
+          backpropagation via chain rule, gradient descent weight updates, and training dynamics
+          visualisation. Achieves 99.5% accuracy (199/200) on the XOR dataset. All equations
+          derived independently. Includes critical analysis of generalisation limits under
+          real-world stochastic noise conditions. Dated October 2023.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Neural Networks</span>
+          <span class="tag">Backpropagation</span>
+          <span class="tag">Gradient Descent</span>
+          <span class="tag blue">Python</span>
+          <span class="tag blue">NumPy</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+          <a href="./papers/PROJECT - 6 NEURAL NETWORKS FROM SCRATCH LATEX FILE.pdf" target="_blank" class="btn btn-primary btn-sm">Read Paper</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- OTHER PROJECTS -->
+  <section id="projects">
+    <p class="section-label reveal">Additional Work</p>
+    <h2 class="section-title reveal">Five Supporting<br>Projects</h2>
+
+    <div class="other-grid">
+
+      <div class="other-card reveal">
+        <h3 class="other-title">Chaotic Sensitivity in Physical Systems</h3>
+        <p class="other-desc">
+          Double pendulum and Lorenz attractor simulations demonstrating
+          sensitive dependence on initial conditions and the emergence of
+          deterministic chaos in classical mechanical systems.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Chaos Theory</span>
+          <span class="tag blue">Python</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+        </div>
+      </div>
+
+      <div class="other-card reveal">
+        <h3 class="other-title">Monte Carlo Simulation of Physical Laws</h3>
+        <p class="other-desc">
+          Stochastic simulation framework applying Monte Carlo methods
+          to verify physical laws through statistical sampling and
+          convergence analysis across multiple physical systems.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Monte Carlo</span>
+          <span class="tag blue">Python</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+        </div>
+      </div>
+
+      <div class="other-card reveal">
+        <h3 class="other-title">Quantitative Finance Portfolio Analysis</h3>
+        <p class="other-desc">
+          Mathematical framework for portfolio optimisation using
+          quantitative methods, risk-return analysis, and
+          statistical modelling of financial instrument behaviour.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Quantitative Finance</span>
+          <span class="tag blue">Python</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+        </div>
+      </div>
+
+      <div class="other-card reveal">
+        <h3 class="other-title">Data Science: Human Population 1880–2025</h3>
+        <p class="other-desc">
+          Longitudinal data analysis of global human population growth
+          spanning 145 years. Includes trend modelling, demographic
+          transition analysis, and projection visualisation.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Data Science</span>
+          <span class="tag blue">Python / Pandas</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+        </div>
+      </div>
+
+      <div class="other-card reveal">
+        <h3 class="other-title">Energy-Optimised Portfolio via Stochastic Processes</h3>
+        <p class="other-desc">
+          Portfolio optimisation framework using stochastic differential
+          equations and energy-minimisation analogies to find
+          optimal asset allocation under uncertainty.
+        </p>
+        <div class="project-tags">
+          <span class="tag">Stochastic Processes</span>
+          <span class="tag blue">Python</span>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline btn-sm">GitHub</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <p class="section-label reveal">Background</p>
+    <h2 class="section-title reveal">About</h2>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>
+          I am a student researcher who has spent the past two years conducting
+          <strong>independent research across computational physics, signal processing,
+          and machine learning</strong> — entirely outside of formal academic supervision.
+        </p>
+        <br>
+        <p>
+          My approach is to begin from <strong>first principles</strong>: deriving governing
+          equations by hand before implementing them computationally. Every project in
+          this portfolio includes dated handwritten derivations as documentary evidence
+          of independent work.
+        </p>
+        <br>
+        <p>
+          I am applying to study <strong>Physics, Computer Science, Mathematics,
+          and Economics</strong> at university, with the goal of continuing
+          this kind of computational research at an institutional level.
+        </p>
+      </div>
+      <div>
+        <div class="stats-grid reveal">
+          <div class="stat-box">
+            <span class="stat-number">8</span>
+            <span class="stat-label">Projects</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number">3</span>
+            <span class="stat-label">IEEE Papers</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number">2+</span>
+            <span class="stat-label">Years Research</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number">0</span>
+            <span class="stat-label">Institutional Support</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-inner">
+      <p class="section-label reveal" style="text-align:center">Get In Touch</p>
+      <h2 class="section-title reveal" style="text-align:center">Contact</h2>
+      <p class="reveal">
+        Open to discussions about research, collaboration,
+        or university admissions inquiries.
+      </p>
+      <div class="contact-links reveal">
+        <a href="/cdn-cgi/l/email-protection#5b283a363a292f33752f29322b3a2f3332753e3f2e1b3c363a323775383436" class="btn btn-primary">
+          Email Me
+        </a>
+        <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-outline">
+          GitHub Profile
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Samarth Tripathi — Independent Research Portfolio</p>
+    <p>Built with purpose. No institutional affiliation.</p>
+  </footer>
+
+  <!-- SCROLL REVEAL -->
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+         
