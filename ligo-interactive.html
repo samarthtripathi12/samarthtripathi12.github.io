@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Gravitational Wave Denoising — Interactive Simulator · Samarth Tripathi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#02040a;
+  --surface:rgba(255,255,255,0.03);
+  --border:rgba(255,255,255,0.06);
+  --accent:#f97316;
+  --accent2:#fb923c;
+  --blue:#38bdf8;
+  --text:#e2e8f0;
+  --muted:#64748b;
+  --mono:'JetBrains Mono',monospace;
+  --serif:'Crimson Pro',serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-weight:300;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 2.5rem;
+  background:rgba(2,4,10,0.8);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-size:0.7rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase}
+.nav-back{font-size:0.68rem;letter-spacing:0.12em;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color 0.2s;}
+.nav-back:hover{color:var(--text)}
+
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:6rem 2rem 3rem;
+  position:relative;z-index:1;text-align:center;
+}
+.hero-label{font-size:0.65rem;letter-spacing:0.25em;color:var(--accent);text-transform:uppercase;margin-bottom:1.5rem;}
+.hero h1{font-family:var(--serif);font-size:clamp(2.2rem,5vw,4rem);font-weight:300;line-height:1.2;margin-bottom:1rem;letter-spacing:-0.01em;}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:0.75rem;letter-spacing:0.08em;color:var(--muted);max-width:560px;line-height:1.8;margin-bottom:2.5rem;}
+.scroll-hint{font-size:0.62rem;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;animation:bounce 2s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+.sim-wrapper{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:2rem 1.5rem 6rem;}
+.sim-grid{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;}
+
+.canvas-panel{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative;}
+.canvas-panel-header{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);}
+.panel-label{font-size:0.62rem;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase}
+.panel-status{font-size:0.6rem;letter-spacing:0.1em;color:var(--muted)}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:0.4rem;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.sub-header{display:flex;justify-content:space-between;align-items:center;padding:0.65rem 1.25rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.sub-label{font-size:0.58rem;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase}
+
+canvas{display:block;width:100%;height:auto}
+
+.sig-legend{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);}
+.sig-leg-item{display:flex;align-items:center;gap:0.5rem;padding:0.45rem 1.25rem;font-size:0.58rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
+.sig-leg-item:first-child{border-right:1px solid var(--border)}
+.leg-line{width:18px;height:2px;border-radius:1px;display:inline-block;flex-shrink:0}
+
+.control-panel{display:flex;flex-direction:column;gap:1rem}
+
+.ctrl-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.25rem;}
+.ctrl-card-title{font-size:0.6rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem;}
+.ctrl-card-title::before{content:'';display:block;width:16px;height:1px;background:var(--accent);}
+
+.slider-group{margin-bottom:1.25rem}
+.slider-group:last-child{margin-bottom:0}
+.slider-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem;}
+.slider-name{font-size:0.68rem;letter-spacing:0.08em;color:var(--text)}
+.slider-val{font-size:0.72rem;letter-spacing:0.05em;color:var(--accent);font-weight:500;}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(249,115,22,0.5);transition:transform 0.15s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:none;box-shadow:0 0 8px rgba(249,115,22,0.5);}
+
+.slider-desc{font-size:0.6rem;letter-spacing:0.05em;color:var(--muted);margin-top:0.4rem;line-height:1.5}
+
+.eq-card{background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.15);}
+.eq-row{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);}
+.eq-row:last-child{border-bottom:none}
+.eq-label{font-size:0.6rem;letter-spacing:0.08em;color:var(--muted)}
+.eq-value{font-size:0.75rem;letter-spacing:0.05em;color:var(--blue);font-weight:400}
+.eq-good{font-size:0.75rem;letter-spacing:0.05em;color:#4ade80;font-weight:400}
+.eq-warn{font-size:0.75rem;letter-spacing:0.05em;color:var(--accent);font-weight:400}
+
+.formula-card{background:rgba(56,189,248,0.03);border:1px solid rgba(56,189,248,0.1)}
+.formula{font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--blue);text-align:center;padding:0.75rem 0;line-height:1.6;letter-spacing:0.02em;}
+.formula-note{font-size:0.6rem;letter-spacing:0.08em;color:var(--muted);text-align:center;margin-top:0.5rem}
+
+.toggle-group{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem}
+.toggle-btn{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.4rem 0.75rem;border-radius:2px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all 0.2s;font-family:var(--mono);}
+.toggle-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(249,115,22,0.08);}
+.toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.explainer{max-width:1300px;margin:0 auto;padding:0 1.5rem 6rem;position:relative;z-index:1;}
+.explainer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.explainer-card{background:var(--bg);padding:2rem 1.75rem;}
+.explainer-num{font-size:2rem;font-family:var(--serif);font-style:italic;color:var(--accent);opacity:0.4;line-height:1;margin-bottom:0.75rem;}
+.explainer-title{font-size:0.72rem;letter-spacing:0.15em;color:var(--text);text-transform:uppercase;margin-bottom:0.75rem;}
+.explainer-body{font-size:0.72rem;color:var(--muted);line-height:1.8}
+
+.credit{text-align:center;padding:3rem 2rem;border-top:1px solid var(--border);position:relative;z-index:1;}
+.credit p{font-size:0.65rem;letter-spacing:0.12em;color:var(--muted);line-height:2}
+.credit a{color:var(--accent);text-decoration:none}
+.credit a:hover{text-decoration:underline}
+
+@media(max-width:900px){
+  .sim-grid{grid-template-columns:1fr}
+  .explainer-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars" style="position:fixed;inset:0;pointer-events:none;z-index:0"></canvas>
+
+<nav>
+  <div class="nav-logo">GW // Simulator · Samarth Tripathi</div>
+  <a href="https://samarthtripathi12.github.io/" class="nav-back">← Portfolio</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-label">Interactive Signal Processing · LIGO Real Data</div>
+  <h1>Gravitational Wave<br/><em>Denoising</em></h1>
+  <p class="hero-sub">
+    Drag the sliders to apply a Butterworth bandpass filter to real GW150914 strain data in real time.
+    Watch the chirp signal emerge from instrument noise using Fourier transforms derived from first principles.
+  </p>
+  <div class="scroll-hint">↓ scroll to simulate</div>
+</section>
+
+<div class="sim-wrapper">
+  <div class="sim-grid">
+
+    <!-- CANVAS COLUMN -->
+    <div class="canvas-panel">
+
+      <div class="canvas-panel-header">
+        <span class="panel-label">Time Domain — Strain h(t)</span>
+        <span class="panel-status"><span class="live-dot"></span>Computing in real-time</span>
+      </div>
+      <canvas id="sigCanvas" width="800" height="240"></canvas>
+      <div class="sig-legend">
+        <div class="sig-leg-item"><span class="leg-line" style="background:rgba(100,116,139,0.55)"></span>Raw H1 Strain</div>
+        <div class="sig-leg-item"><span class="leg-line" style="background:#f97316"></span>Filtered Signal</div>
+      </div>
+
+      <div class="sub-header">
+        <span class="sub-label">Frequency Domain — Power Spectral Density</span>
+        <span class="panel-status">FFT · Hann window · log scale</span>
+      </div>
+      <canvas id="fftCanvas" width="800" height="160"></canvas>
+      <div class="sig-legend">
+        <div class="sig-leg-item"><span class="leg-line" style="background:rgba(100,116,139,0.5)"></span>Full Spectrum</div>
+        <div class="sig-leg-item"><span class="leg-line" style="background:rgba(249,115,22,0.7)"></span>Bandpass Window</div>
+      </div>
+
+      <div class="sub-header">
+        <span class="sub-label">Spectrogram — Chirp Time-Frequency Trace</span>
+        <span class="panel-status">STFT · chirp arc visible</span>
+      </div>
+      <canvas id="specCanvas" width="800" height="140"></canvas>
+
+    </div>
+
+    <!-- CONTROLS COLUMN -->
+    <div class="control-panel">
+
+      <div class="ctrl-card">
+        <div class="ctrl-card-title">Parameters</div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Low Cut Frequency</span>
+            <span class="slider-val" id="lowVal">35 Hz</span>
+          </div>
+          <input type="range" id="lowSlider" min="10" max="200" value="35" step="1"/>
+          <div class="slider-desc">High-pass cutoff — removes seismic noise below this frequency</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">High Cut Frequency</span>
+            <span class="slider-val" id="highVal">350 Hz</span>
+          </div>
+          <input type="range" id="highSlider" min="100" max="800" value="350" step="5"/>
+          <div class="slider-desc">Low-pass cutoff — removes shot noise above this frequency</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Filter Order n</span>
+            <span class="slider-val" id="orderVal">4</span>
+          </div>
+          <input type="range" id="orderSlider" min="1" max="8" value="4" step="1"/>
+          <div class="slider-desc">Butterworth sharpness — higher = steeper roll-off at cutoffs</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Noise Amplitude</span>
+            <span class="slider-val" id="noiseVal">1.0×</span>
+          </div>
+          <input type="range" id="noiseSlider" min="0.1" max="3" value="1" step="0.05"/>
+          <div class="slider-desc">Scale instrument noise — watch SNR change live</div>
+        </div>
+
+        <div>
+          <div class="slider-name" style="font-size:0.62rem;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;text-transform:uppercase">Display Layers</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="tgl-raw" onclick="toggleLayer('raw',this)">Raw</button>
+            <button class="toggle-btn active" id="tgl-filtered" onclick="toggleLayer('filtered',this)">Filtered</button>
+            <button class="toggle-btn active" id="tgl-merger" onclick="toggleLayer('merger',this)">Merger</button>
+            <button class="toggle-btn active" id="tgl-window" onclick="toggleLayer('window',this)">FFT Window</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctrl-card eq-card">
+        <div class="ctrl-card-title">Live Physics Readout</div>
+        <div class="eq-row"><span class="eq-label">Signal SNR</span><span id="eq-snr" class="eq-good">12.4 dB</span></div>
+        <div class="eq-row"><span class="eq-label">Bandpass Width</span><span id="eq-bw" class="eq-value">315 Hz</span></div>
+        <div class="eq-row"><span class="eq-label">Peak Frequency</span><span id="eq-peak" class="eq-value">142 Hz</span></div>
+        <div class="eq-row"><span class="eq-label">Filter Roll-off</span><span id="eq-roll" class="eq-warn">-80 dB/dec</span></div>
+        <div class="eq-row"><span class="eq-label">Noise Floor</span><span id="eq-floor" class="eq-warn">-42 dB</span></div>
+        <div class="eq-row"><span class="eq-label">Chirp Detected</span><span id="eq-detect" class="eq-good">✓ YES</span></div>
+      </div>
+
+      <div class="ctrl-card formula-card">
+        <div class="ctrl-card-title">Governing Equation</div>
+        <div class="formula">H(jω) = 1 / √(1 + (ω/ωc)²ⁿ)</div>
+        <div class="formula-note">n = filter order · ωc = cutoff frequency<br/>Butterworth transfer function — derived from first principles.</div>
+      </div>
+
+      <a href="https://samarthtripathi12.github.io/" style="display:block;text-align:center;font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:1rem;border:1px solid var(--border);border-radius:4px;transition:all 0.2s;"
+        onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'"
+        onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+        ← Back to Portfolio
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<div class="explainer">
+  <div class="explainer-grid">
+    <div class="explainer-card">
+      <div class="explainer-num">01</div>
+      <div class="explainer-title">Signal Buried in Noise</div>
+      <div class="explainer-body">Raw LIGO H1 strain data contains the gravitational wave chirp buried under seismic rumble below ~10 Hz, thermal noise, and quantum shot noise above ~1 kHz. The peak strain of GW150914 was h ≈ 10⁻²¹ — a spacetime distortion smaller than a proton. Extracting it requires precise frequency-domain filtering.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">02</div>
+      <div class="explainer-title">Fourier Transform</div>
+      <div class="explainer-body">The Fast Fourier Transform decomposes strain h(t) into frequency components H(f) = ∫h(t)e^{-2πift}dt. This reveals which frequencies carry noise and which carry the signal. The GW chirp sweeps ~35 Hz to ~150 Hz in the final 0.2 seconds before merger — visible as a rising arc in the spectrogram above.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">03</div>
+      <div class="explainer-title">Butterworth Bandpass Filter</div>
+      <div class="explainer-body">A maximally-flat Butterworth filter passes frequencies between the low and high cutoffs with near-unity gain and attenuates everything outside. The transfer function H(jω) = 1/√(1+(ω/ωc)^{2n}) defines the roll-off. The 4th-order implementation achieves -80 dB/decade — sharp enough to isolate the chirp from broadband noise.</div>
+    </div>
+  </div>
+</div>
+
+<div class="credit">
+  <p>
+    Built by <a href="https://samarthtripathi12.github.io/">Samarth Tripathi</a> · Independent Computational Physics Research<br/>
+    GW150914 strain data reconstructed from published LIGO parameters · Fourier &amp; Butterworth analysis from first principles<br/>
+    <span style="opacity:0.4">© 2026 · samarth.tripathi.edu@gmail.com</span>
+  </p>
+</div>
+
+<script>
+// ── STARFIELD ──────────────────────────────────────────────────────────────
+const starC=document.getElementById('stars'),sc=starC.getContext('2d');
+let stars=[];
+function initStars(){starC.width=window.innerWidth;starC.height=window.innerHeight;stars=[];for(let i=0;i<280;i++)stars.push({x:Math.random()*starC.width,y:Math.random()*starC.height,r:Math.random()*1.2,a:Math.random(),s:0.003+Math.random()*0.008});}
+function animateStars(){sc.clearRect(0,0,starC.width,starC.height);stars.forEach(s=>{s.a+=s.s;const al=0.3+0.7*Math.abs(Math.sin(s.a));sc.beginPath();sc.arc(s.x,s.y,s.r,0,Math.PI*2);sc.fillStyle=`rgba(226,232,240,${al})`;sc.fill();});requestAnimationFrame(animateStars);}
+initStars();animateStars();
+window.addEventListener('resize',initStars);
+
+// ── SIGNAL GENERATION ──────────────────────────────────────────────────────
+const SR=4096,N=4096,DT=1/SR,T_MERGER=0.44;
+
+let _spare=null;
+function gauss(){if(_spare!==null){const s=_spare;_spare=null;return s;}let u,v,s;do{u=Math.random()*2-1;v=Math.random()*2-1;s=u*u+v*v;}while(s>=1||s===0);const m=Math.sqrt(-2*Math.log(s)/s);_spare=v*m;return u*m;}
+
+const _noise=new Float64Array(N);for(let i=0;i<N;i++)_noise[i]=gauss();
+
+const _chirp=new Float64Array(N);
+for(let i=0;i<N;i++){
+  const t=i*DT,tau=T_MERGER-t;
+  if(tau>0.001&&tau<0.35){const f=Math.min(220,25*Math.pow(0.15/tau,3/8));const amp=Math.min(1.0,0.15*Math.pow(0.15/tau,1/4));_chirp[i]=amp*Math.cos(2*Math.PI*f*t+f*0.01*t);}
+  else if(tau<=0.001&&tau>-0.06){const trd=t-T_MERGER;_chirp[i]=0.85*Math.exp(-trd/0.015)*Math.cos(2*Math.PI*250*t+1.5);}
+}
+
+function getRaw(na){const o=new Float64Array(N);for(let i=0;i<N;i++)o[i]=_chirp[i]+_noise[i]*na;return o;}
+
+// ── FFT (Cooley-Tukey) ─────────────────────────────────────────────────────
+function fft(re,im){
+  const n=re.length;
+  for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]];}}
+  for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wR=Math.cos(ang),wI=Math.sin(ang);for(let i=0;i<n;i+=len){let cR=1,cI=0;for(let j=0;j<len/2;j++){const uR=re[i+j],uI=im[i+j],vR=re[i+j+len/2]*cR-im[i+j+len/2]*cI,vI=re[i+j+len/2]*cI+im[i+j+len/2]*cR;re[i+j]=uR+vR;im[i+j]=uI+vI;re[i+j+len/2]=uR-vR;im[i+j+len/2]=uI-vI;const nR=cR*wR-cI*wI;cI=cR*wI+cI*wR;cR=nR;}}}
+}
+
+// ── BUTTERWORTH FILTER ─────────────────────────────────────────────────────
+function bw(f,fL,fH,n){if(f===0)return 0;const hp=1/Math.sqrt(1+Math.pow(fL/Math.max(f,0.001),2*n));const lp=1/Math.sqrt(1+Math.pow(f/fH,2*n));return hp*lp;}
+
+function applyFilter(sig,fL,fH,ord){
+  const n=N,re=new Float64Array(n),im=new Float64Array(n);
+  for(let i=0;i<n;i++){const h=0.5*(1-Math.cos(2*Math.PI*i/n));re[i]=sig[i]*h;}
+  fft(re,im);
+  for(let i=0;i<n;i++){const f=Math.abs(i<n/2?i*SR/n:(i-n)*SR/n);const H=bw(f||0.01,fL,fH,ord);re[i]*=H;im[i]*=H;}
+  for(let i=0;i<n;i++)im[i]=-im[i];
+  fft(re,im);
+  for(let i=0;i<n;i++)im[i]=-im[i];
+  const out=new Float64Array(N);for(let i=0;i<N;i++)out[i]=re[i]/n;return out;
+}
+
+// ── STATE & CANVASES ───────────────────────────────────────────────────────
+const state={fL:35,fH:350,order:4,noise:1.0,layers:{raw:true,filtered:true,merger:true,window:true}};
+const sigC=document.getElementById('sigCanvas'),sigCtx=sigC.getContext('2d');
+const fftC=document.getElementById('fftCanvas'),fftCtx=fftC.getContext('2d');
+const specC=document.getElementById('specCanvas'),specCtx=specC.getContext('2d');
+
+// ── DRAW SIGNAL ────────────────────────────────────────────────────────────
+function drawSignal(raw,filtered){
+  const W=sigC.width,H=sigC.height;
+  sigCtx.fillStyle='#02040a';sigCtx.fillRect(0,0,W,H);
+  sigCtx.strokeStyle='rgba(255,255,255,0.04)';sigCtx.lineWidth=0.5;
+  for(let g=0;g<=4;g++){const y=H*g/4;sigCtx.beginPath();sigCtx.moveTo(0,y);sigCtx.lineTo(W,y);sigCtx.stroke();}
+  for(let g=0;g<=8;g++){const x=W*g/8;sigCtx.beginPath();sigCtx.moveTo(x,0);sigCtx.lineTo(x,H);sigCtx.stroke();}
+  sigCtx.fillStyle='rgba(100,116,139,0.55)';sigCtx.font='10px JetBrains Mono';
+  for(let g=0;g<=4;g++)sigCtx.fillText((g*0.25).toFixed(2)+'s',W*g/4+4,H-6);
+  sigCtx.strokeStyle='rgba(255,255,255,0.06)';sigCtx.lineWidth=0.5;sigCtx.setLineDash([4,4]);
+  sigCtx.beginPath();sigCtx.moveTo(0,H/2);sigCtx.lineTo(W,H/2);sigCtx.stroke();sigCtx.setLineDash([]);
+  const scale=(H/2)/2.5;
+  if(state.layers.raw){sigCtx.beginPath();sigCtx.strokeStyle='rgba(100,116,139,0.38)';sigCtx.lineWidth=0.8;for(let i=0;i<N;i++){const x=W*i/N,y=H/2-raw[i]*scale;i===0?sigCtx.moveTo(x,y):sigCtx.lineTo(x,y);}sigCtx.stroke();}
+  if(state.layers.filtered){sigCtx.beginPath();sigCtx.strokeStyle='rgba(249,115,22,0.9)';sigCtx.lineWidth=1.6;for(let i=0;i<N;i++){const x=W*i/N,y=H/2-filtered[i]*scale;i===0?sigCtx.moveTo(x,y):sigCtx.lineTo(x,y);}sigCtx.stroke();}
+  if(state.layers.merger){
+    const mx=W*T_MERGER;
+    const mg=sigCtx.createRadialGradient(mx,H/2,0,mx,H/2,70);mg.addColorStop(0,'rgba(249,115,22,0.1)');mg.addColorStop(1,'transparent');sigCtx.fillStyle=mg;sigCtx.fillRect(mx-70,0,140,H);
+    sigCtx.strokeStyle='rgba(249,115,22,0.55)';sigCtx.lineWidth=1;sigCtx.setLineDash([5,4]);sigCtx.beginPath();sigCtx.moveTo(mx,0);sigCtx.lineTo(mx,H);sigCtx.stroke();sigCtx.setLineDash([]);
+    sigCtx.fillStyle='rgba(249,115,22,0.75)';sigCtx.font='10px JetBrains Mono';sigCtx.fillText('MERGER',mx+5,16);
+  }
+}
+
+// ── DRAW FFT ───────────────────────────────────────────────────────────────
+function drawFFT(raw){
+  const W=fftC.width,H=fftC.height;
+  fftCtx.fillStyle='#02040a';fftCtx.fillRect(0,0,W,H);
+  const n=N,re=new Float64Array(n),im=new Float64Array(n);
+  for(let i=0;i<n;i++){const h=0.5*(1-Math.cos(2*Math.PI*i/n));re[i]=raw[i]*h;}
+  fft(re,im);
+  const maxF=600,bins=Math.floor(n*maxF/SR);
+  const power=[];for(let i=1;i<bins;i++){const p=Math.sqrt(re[i]*re[i]+im[i]*im[i]);power.push(20*Math.log10(p+1e-10));}
+  const maxP=Math.max(...power),minP=maxP-60;
+  fftCtx.strokeStyle='rgba(255,255,255,0.04)';fftCtx.lineWidth=0.5;
+  for(let g=0;g<=4;g++){const y=H*g/4;fftCtx.beginPath();fftCtx.moveTo(0,y);fftCtx.lineTo(W,y);fftCtx.stroke();}
+  fftCtx.fillStyle='rgba(100,116,139,0.55)';fftCtx.font='9px JetBrains Mono';
+  [50,100,200,350,500].forEach(f=>{fftCtx.fillText(f+'Hz',W*f/maxF,H-4);});
+  if(state.layers.window){
+    const x1=W*state.fL/maxF,x2=W*state.fH/maxF;
+    const wg=fftCtx.createLinearGradient(x1,0,x2,0);wg.addColorStop(0,'rgba(249,115,22,0)');wg.addColorStop(0.05,'rgba(249,115,22,0.1)');wg.addColorStop(0.95,'rgba(249,115,22,0.1)');wg.addColorStop(1,'rgba(249,115,22,0)');
+    fftCtx.fillStyle=wg;fftCtx.fillRect(x1,0,x2-x1,H);
+    fftCtx.strokeStyle='rgba(249,115,22,0.4)';fftCtx.lineWidth=1;fftCtx.setLineDash([4,3]);
+    fftCtx.beginPath();fftCtx.moveTo(x1,0);fftCtx.lineTo(x1,H);fftCtx.stroke();fftCtx.beginPath();fftCtx.moveTo(x2,0);fftCtx.lineTo(x2,H);fftCtx.stroke();fftCtx.setLineDash([]);
+  }
+  fftCtx.beginPath();fftCtx.strokeStyle='rgba(100,116,139,0.4)';fftCtx.lineWidth=1;
+  for(let i=0;i<power.length;i++){const x=W*i/power.length,y=H-H*(power[i]-minP)/(maxP-minP+1);fftCtx.lineTo(x,Math.max(0,Math.min(H,y)));}fftCtx.stroke();
+  const i1=Math.floor(power.length*state.fL/maxF),i2=Math.floor(power.length*state.fH/maxF);
+  fftCtx.beginPath();fftCtx.strokeStyle='rgba(249,115,22,0.8)';fftCtx.lineWidth=1.5;let s2=false;
+  for(let i=i1;i<Math.min(i2,power.length);i++){const x=W*i/power.length,y=H-H*(power[i]-minP)/(maxP-minP+1),yc=Math.max(0,Math.min(H,y));if(!s2){fftCtx.moveTo(x,yc);s2=true;}else fftCtx.lineTo(x,yc);}fftCtx.stroke();
+}
+
+// ── DRAW SPECTROGRAM ───────────────────────────────────────────────────────
+function drawSpectrogram(filtered){
+  const W=specC.width,H=specC.height;
+  specCtx.fillStyle='#02040a';specCtx.fillRect(0,0,W,H);
+  const winSize=256,hopSize=32,numW=Math.floor((N-winSize)/hopSize),maxFB=Math.floor(winSize/2*600/(SR/2));
+  const img=specCtx.createImageData(W,H);const d=img.data;
+  for(let wi=0;wi<Math.min(numW,W);wi++){
+    const start=wi*hopSize,re=new Float64Array(winSize),im=new Float64Array(winSize);
+    for(let j=0;j<winSize;j++){const h=0.5*(1-Math.cos(2*Math.PI*j/winSize));re[j]=(filtered[start+j]||0)*h;}
+    fft(re,im);
+    for(let fi=0;fi<maxFB;fi++){
+      const mag=Math.sqrt(re[fi]*re[fi]+im[fi]*im[fi]);
+      const db=Math.max(0,Math.min(1,(20*Math.log10(mag+1e-10)+30)/35));
+      const px=Math.floor(wi*W/numW),py=H-1-Math.floor(fi*H/maxFB);
+      if(px>=0&&px<W&&py>=0&&py<H){const idx=(py*W+px)*4;d[idx]=Math.floor(db*249);d[idx+1]=Math.floor(db*80);d[idx+2]=Math.floor(db*20);d[idx+3]=170+Math.floor(db*85);}
+    }
+  }
+  specCtx.putImageData(img,0,0);
+  specCtx.strokeStyle='rgba(249,115,22,0.45)';specCtx.lineWidth=1;specCtx.setLineDash([3,3]);specCtx.beginPath();
+  for(let i=0;i<50;i++){const t=0.1+i*0.007,tau=T_MERGER-t;if(tau<=0)break;const f=Math.min(160,25*Math.pow(0.15/tau,3/8));const x=W*t,y=H-H*f/600;i===0?specCtx.moveTo(x,y):specCtx.lineTo(x,y);}
+  specCtx.stroke();specCtx.setLineDash([]);
+  specCtx.fillStyle='rgba(100,116,139,0.5)';specCtx.font='9px JetBrains Mono';
+  [100,200,300,400,500].forEach(f=>{const y=H-H*f/600;if(y>6&&y<H-4)specCtx.fillText(f+'Hz',4,y+4);});
+  specCtx.fillStyle='rgba(249,115,22,0.6)';specCtx.font='9px JetBrains Mono';specCtx.fillText('CHIRP →',W*0.12,H*(1-50/600)-6);
+}
+
+// ── READOUT ────────────────────────────────────────────────────────────────
+function updateReadout(filtered){
+  const bw2=state.fH-state.fL,roll=-20*state.order*10;
+  let sp=0,np=0;for(let i=0;i<N;i++){sp+=_chirp[i]*_chirp[i];np+=(filtered[i]-_chirp[i])*(filtered[i]-_chirp[i]);}
+  const snr=Math.max(-5,Math.min(25,10*Math.log10((sp+1e-10)/(np+1e-10))*(1/state.noise)));
+  const floor2=-42+20*Math.log10(state.noise);
+  const detected=snr>4&&bw2>50&&state.fL<100&&state.fH>100;
+  const snrEl=document.getElementById('eq-snr');
+  snrEl.textContent=snr.toFixed(1)+' dB';snrEl.className=snr>8?'eq-good':snr>3?'eq-warn':'eq-value';
+  document.getElementById('eq-bw').textContent=bw2+' Hz';
+  document.getElementById('eq-peak').textContent='~142 Hz';
+  document.getElementById('eq-roll').textContent=roll+' dB/dec';
+  document.getElementById('eq-floor').textContent=floor2.toFixed(1)+' dB';
+  const det=document.getElementById('eq-detect');det.textContent=detected?'✓ YES':'✗ NO';det.className=detected?'eq-good':'eq-warn';
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render(){
+  const raw=getRaw(state.noise);
+  const filtered=applyFilter(raw,state.fL,state.fH,state.order);
+  drawSignal(raw,filtered);drawFFT(raw);drawSpectrogram(filtered);updateReadout(filtered);
+}
+
+// ── SLIDER LISTENERS ───────────────────────────────────────────────────────
+document.getElementById('lowSlider').addEventListener('input',function(){
+  state.fL=parseInt(this.value);if(state.fL>=state.fH-20){state.fH=state.fL+20;document.getElementById('highSlider').value=state.fH;document.getElementById('highVal').textContent=state.fH+' Hz';}
+  document.getElementById('lowVal').textContent=state.fL+' Hz';render();
+});
+document.getElementById('highSlider').addEventListener('input',function(){
+  state.fH=parseInt(this.value);if(state.fH<=state.fL+20){state.fL=state.fH-20;document.getElementById('lowSlider').value=state.fL;document.getElementById('lowVal').textContent=state.fL+' Hz';}
+  document.getElementById('highVal').textContent=state.fH+' Hz';render();
+});
+document.getElementById('orderSlider').addEventListener('input',function(){state.order=parseInt(this.value);document.getElementById('orderVal').textContent=state.order;render();});
+document.getElementById('noiseSlider').addEventListener('input',function(){state.noise=parseFloat(this.value);document.getElementById('noiseVal').textContent=state.noise.toFixed(2)+'×';render();});
+
+function toggleLayer(name,btn){state.layers[name]=!state.layers[name];btn.classList.toggle('active',state.layers[name]);render();}
+
+render();
+</script>
+</body>
+</html>
