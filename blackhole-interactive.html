@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Black Hole Light Bending — Interactive Simulator · Samarth Tripathi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#02040a;
+  --surface:rgba(255,255,255,0.03);
+  --border:rgba(255,255,255,0.06);
+  --accent:#f97316;
+  --accent2:#fb923c;
+  --blue:#38bdf8;
+  --text:#e2e8f0;
+  --muted:#64748b;
+  --mono:'JetBrains Mono',monospace;
+  --serif:'Crimson Pro',serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-weight:300;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* STARFIELD */
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1rem 2.5rem;
+  background:rgba(2,4,10,0.8);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-size:0.7rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase}
+.nav-back{
+  font-size:0.68rem;letter-spacing:0.12em;color:var(--muted);
+  text-decoration:none;text-transform:uppercase;
+  transition:color 0.2s;
+}
+.nav-back:hover{color:var(--text)}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:6rem 2rem 3rem;
+  position:relative;z-index:1;
+  text-align:center;
+}
+.hero-label{
+  font-size:0.65rem;letter-spacing:0.25em;color:var(--accent);
+  text-transform:uppercase;margin-bottom:1.5rem;
+}
+.hero h1{
+  font-family:var(--serif);
+  font-size:clamp(2.2rem,5vw,4rem);
+  font-weight:300;
+  line-height:1.2;
+  margin-bottom:1rem;
+  letter-spacing:-0.01em;
+}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero-sub{
+  font-size:0.75rem;letter-spacing:0.08em;
+  color:var(--muted);max-width:560px;line-height:1.8;
+  margin-bottom:2.5rem;
+}
+.scroll-hint{
+  font-size:0.62rem;letter-spacing:0.2em;color:var(--muted);
+  text-transform:uppercase;animation:bounce 2s infinite;
+}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* MAIN SIM LAYOUT */
+.sim-wrapper{
+  position:relative;z-index:1;
+  max-width:1300px;margin:0 auto;
+  padding:2rem 1.5rem 6rem;
+}
+
+.sim-grid{
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:1.5rem;
+  align-items:start;
+}
+
+/* CANVAS PANEL */
+.canvas-panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+  position:relative;
+}
+.canvas-panel-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.75rem 1.25rem;
+  border-bottom:1px solid var(--border);
+}
+.panel-label{font-size:0.62rem;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase}
+.panel-status{font-size:0.6rem;letter-spacing:0.1em;color:var(--muted)}
+.live-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--accent);margin-right:0.4rem;
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+canvas{display:block;width:100%;height:auto}
+
+/* CONTROL PANEL */
+.control-panel{display:flex;flex-direction:column;gap:1rem}
+
+.ctrl-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1.25rem;
+}
+.ctrl-card-title{
+  font-size:0.6rem;letter-spacing:0.2em;
+  color:var(--accent);text-transform:uppercase;
+  margin-bottom:1.25rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.ctrl-card-title::before{
+  content:'';display:block;width:16px;height:1px;background:var(--accent);
+}
+
+.slider-group{margin-bottom:1.25rem}
+.slider-group:last-child{margin-bottom:0}
+
+.slider-label{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:0.6rem;
+}
+.slider-name{font-size:0.68rem;letter-spacing:0.08em;color:var(--text)}
+.slider-val{
+  font-size:0.72rem;letter-spacing:0.05em;
+  color:var(--accent);font-weight:500;
+}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:2px;
+  background:var(--border);border-radius:2px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;
+  box-shadow:0 0 8px rgba(249,115,22,0.5);
+  transition:transform 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;border:none;
+  box-shadow:0 0 8px rgba(249,115,22,0.5);
+}
+
+.slider-desc{font-size:0.6rem;letter-spacing:0.05em;color:var(--muted);margin-top:0.4rem;line-height:1.5}
+
+/* EQUATIONS READOUT */
+.eq-card{
+  background:rgba(249,115,22,0.04);
+  border:1px solid rgba(249,115,22,0.15);
+}
+
+.eq-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.6rem 0;
+  border-bottom:1px solid var(--border);
+}
+.eq-row:last-child{border-bottom:none}
+.eq-label{font-size:0.6rem;letter-spacing:0.08em;color:var(--muted)}
+.eq-value{font-size:0.75rem;letter-spacing:0.05em;color:var(--blue);font-weight:400}
+
+/* FORMULA DISPLAY */
+.formula-card{background:rgba(56,189,248,0.03);border:1px solid rgba(56,189,248,0.1)}
+.formula{
+  font-family:var(--serif);font-style:italic;
+  font-size:1rem;color:var(--blue);
+  text-align:center;padding:0.75rem 0;
+  line-height:1.6;letter-spacing:0.02em;
+}
+.formula-note{font-size:0.6rem;letter-spacing:0.08em;color:var(--muted);text-align:center;margin-top:0.5rem}
+
+/* TOGGLE BUTTONS */
+.toggle-group{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem}
+.toggle-btn{
+  font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;
+  padding:0.4rem 0.75rem;border-radius:2px;cursor:pointer;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);transition:all 0.2s;font-family:var(--mono);
+}
+.toggle-btn.active{
+  border-color:var(--accent);color:var(--accent);
+  background:rgba(249,115,22,0.08);
+}
+.toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* EXPLAINER */
+.explainer{
+  max-width:1300px;margin:0 auto;
+  padding:0 1.5rem 6rem;
+  position:relative;z-index:1;
+}
+.explainer-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+}
+.explainer-card{
+  background:var(--bg);padding:2rem 1.75rem;
+}
+.explainer-num{
+  font-size:2rem;font-family:var(--serif);font-style:italic;
+  color:var(--accent);opacity:0.4;line-height:1;margin-bottom:0.75rem;
+}
+.explainer-title{
+  font-size:0.72rem;letter-spacing:0.15em;
+  color:var(--text);text-transform:uppercase;margin-bottom:0.75rem;
+}
+.explainer-body{font-size:0.72rem;color:var(--muted);line-height:1.8}
+
+/* CREDIT */
+.credit{
+  text-align:center;padding:3rem 2rem;
+  border-top:1px solid var(--border);
+  position:relative;z-index:1;
+}
+.credit p{font-size:0.65rem;letter-spacing:0.12em;color:var(--muted);line-height:2}
+.credit a{color:var(--accent);text-decoration:none}
+.credit a:hover{text-decoration:underline}
+
+@media(max-width:900px){
+  .sim-grid{grid-template-columns:1fr}
+  .explainer-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars" style="position:fixed;inset:0;pointer-events:none;z-index:0"></canvas>
+
+<nav>
+  <div class="nav-logo">BH // Simulator · Samarth Tripathi</div>
+  <a href="https://samarthtripathi12.github.io/" class="nav-back">← Portfolio</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-label">Interactive Physics Simulation · General Relativity</div>
+  <h1>Black Hole<br/><em>Light Bending</em></h1>
+  <p class="hero-sub">
+    Drag the sliders to control black hole mass and photon trajectory in real time.
+    Photon geodesics computed via Schwarzschild metric integration.
+    All equations derived from first principles.
+  </p>
+  <div class="scroll-hint">↓ scroll to simulate</div>
+</section>
+
+<div class="sim-wrapper">
+  <div class="sim-grid">
+
+    <!-- CANVAS -->
+    <div class="canvas-panel">
+      <div class="canvas-panel-header">
+        <span class="panel-label">Live Geodesic Renderer</span>
+        <span class="panel-status"><span class="live-dot"></span>Computing in real-time</span>
+      </div>
+      <canvas id="bhCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="control-panel">
+
+      <!-- SLIDERS -->
+      <div class="ctrl-card">
+        <div class="ctrl-card-title">Parameters</div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Black Hole Mass</span>
+            <span class="slider-val" id="massVal">10 M☉</span>
+          </div>
+          <input type="range" id="massSlider" min="1" max="50" value="10" step="0.5"/>
+          <div class="slider-desc">Controls Schwarzschild radius Rₛ = 2GM/c²</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Impact Parameter b</span>
+            <span class="slider-val" id="impactVal">6.0 Rₛ</span>
+          </div>
+          <input type="range" id="impactSlider" min="2.7" max="15" value="6" step="0.1"/>
+          <div class="slider-desc">Closest approach distance of photon ray</div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span class="slider-name">Ray Count</span>
+            <span class="slider-val" id="rayVal">12</span>
+          </div>
+          <input type="range" id="raySlider" min="1" max="30" value="12" step="1"/>
+          <div class="slider-desc">Number of photon geodesics rendered</div>
+        </div>
+
+        <div style="margin-top:1rem">
+          <div class="slider-name" style="font-size:0.62rem;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;text-transform:uppercase">Display Layers</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="tgl-rays" onclick="toggleLayer('rays',this)">Rays</button>
+            <button class="toggle-btn active" id="tgl-sphere" onclick="toggleLayer('sphere',this)">Photon Sphere</button>
+            <button class="toggle-btn active" id="tgl-disk" onclick="toggleLayer('disk',this)">Accretion Disk</button>
+            <button class="toggle-btn active" id="tgl-grid" onclick="toggleLayer('grid',this)">Space Grid</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE EQUATIONS -->
+      <div class="ctrl-card eq-card">
+        <div class="ctrl-card-title">Live Physics Readout</div>
+        <div class="eq-row">
+          <span class="eq-label">Schwarzschild Radius Rₛ</span>
+          <span class="eq-value" id="eq-rs">29.5 km</span>
+        </div>
+        <div class="eq-row">
+          <span class="eq-label">Photon Sphere r_ph</span>
+          <span class="eq-value" id="eq-rph">44.3 km</span>
+        </div>
+        <div class="eq-row">
+          <span class="eq-label">ISCO Radius r_ISCO</span>
+          <span class="eq-value" id="eq-risco">88.6 km</span>
+        </div>
+        <div class="eq-row">
+          <span class="eq-label">Deflection Angle α</span>
+          <span class="eq-value" id="eq-alpha">12.4°</span>
+        </div>
+        <div class="eq-row">
+          <span class="eq-label">Gravitational Redshift z</span>
+          <span class="eq-value" id="eq-redshift">0.082</span>
+        </div>
+        <div class="eq-row">
+          <span class="eq-label">Escape Velocity</span>
+          <span class="eq-value" id="eq-escape">0.707 c</span>
+        </div>
+      </div>
+
+      <!-- KEY FORMULA -->
+      <div class="ctrl-card formula-card">
+        <div class="ctrl-card-title">Governing Equation</div>
+        <div class="formula">d²u/dφ² + u = 3GMu²/c²</div>
+        <div class="formula-note">Binet equation for null geodesics in Schwarzschild geometry.<br/>u = 1/r, derived from first principles.</div>
+      </div>
+
+      <!-- BACK LINK -->
+      <a href="https://samarthtripathi12.github.io/" style="
+        display:block;text-align:center;
+        font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;
+        color:var(--muted);text-decoration:none;padding:1rem;
+        border:1px solid var(--border);border-radius:4px;
+        transition:all 0.2s;
+      " onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'"
+         onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+        ← Back to Portfolio
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- EXPLAINER -->
+<div class="explainer">
+  <div class="explainer-grid">
+    <div class="explainer-card">
+      <div class="explainer-num">01</div>
+      <div class="explainer-title">Schwarzschild Metric</div>
+      <div class="explainer-body">The geometry of spacetime around a non-rotating black hole is described by ds² = -(1-Rₛ/r)c²dt² + (1-Rₛ/r)⁻¹dr² + r²dΩ². Photons follow null geodesics where ds²=0, forcing light to curve in the warped geometry.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">02</div>
+      <div class="explainer-title">Photon Sphere</div>
+      <div class="explainer-body">At r = 3GM/c² = 1.5Rₛ, photons can orbit indefinitely in unstable circular orbits. This is the photon sphere — visualized as the orange ring in the simulation. Light rays with impact parameter b ≈ 5.196GM/c are captured here.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">03</div>
+      <div class="explainer-title">Geodesic Integration</div>
+      <div class="explainer-body">The simulator numerically integrates the Binet equation d²u/dφ² + u = 3GMu²/c² using 4th-order Runge-Kutta with sub-pixel accuracy. Each rendered ray represents a real photon geodesic computed from the exact relativistic equations.</div>
+    </div>
+  </div>
+</div>
+
+<div class="credit">
+  <p>
+    Built by <a href="https://samarthtripathi12.github.io/">Samarth Tripathi</a> · Independent Computational Physics Research<br/>
+    Schwarzschild geodesics · RK4 Numerical Integration · First Principles Derivation<br/>
+    <span style="opacity:0.4">© 2026 · samarth.tripathi.edu@gmail.com</span>
+  </p>
+</div>
+
+<script>
+// ─── STARFIELD ───────────────────────────────────────────────────────────────
+const starCanvas = document.getElementById('stars');
+const sc = starCanvas.getContext('2d');
+let stars = [];
+
+function initStars() {
+  starCanvas.width = window.innerWidth;
+  starCanvas.height = window.innerHeight;
+  stars = [];
+  for (let i = 0; i < 280; i++) {
+    stars.push({
+      x: Math.random() * starCanvas.width,
+      y: Math.random() * starCanvas.height,
+      r: Math.random() * 1.2,
+      a: Math.random(),
+      speed: 0.003 + Math.random() * 0.008
+    });
+  }
+}
+
+function animateStars() {
+  sc.clearRect(0, 0, starCanvas.width, starCanvas.height);
+  stars.forEach(s => {
+    s.a += s.speed;
+    const alpha = 0.3 + 0.7 * Math.abs(Math.sin(s.a));
+    sc.beginPath();
+    sc.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    sc.fillStyle = `rgba(226,232,240,${alpha})`;
+    sc.fill();
+  });
+  requestAnimationFrame(animateStars);
+}
+initStars();
+animateStars();
+window.addEventListener('resize', initStars);
+
+// ─── SIMULATOR ───────────────────────────────────────────────────────────────
+const canvas = document.getElementById('bhCanvas');
+const ctx = canvas.getContext('2d');
+
+// State
+let state = {
+  mass: 10,
+  impact: 6.0,
+  rays: 12,
+  layers: { rays: true, sphere: true, disk: true, grid: true }
+};
+
+// Layer toggle
+function toggleLayer(name, btn) {
+  state.layers[name] = !state.layers[name];
+  btn.classList.toggle('active', state.layers[name]);
+  render();
+}
+
+// Slider listeners
+document.getElementById('massSlider').addEventListener('input', function() {
+  state.mass = parseFloat(this.value);
+  document.getElementById('massVal').textContent = state.mass.toFixed(1) + ' M☉';
+  updateReadout();
+  render();
+});
+document.getElementById('impactSlider').addEventListener('input', function() {
+  state.impact = parseFloat(this.value);
+  document.getElementById('impactVal').textContent = state.impact.toFixed(1) + ' Rₛ';
+  updateReadout();
+  render();
+});
+document.getElementById('raySlider').addEventListener('input', function() {
+  state.rays = parseInt(this.value);
+  document.getElementById('rayVal').textContent = state.rays;
+  render();
+});
+
+// Physics constants
+const G = 6.674e-11;
+const c = 3e8;
+const M_sun = 1.989e30;
+
+function updateReadout() {
+  const M = state.mass * M_sun;
+  const Rs = (2 * G * M) / (c * c); // in meters
+  const Rs_km = (Rs / 1000).toFixed(1);
+  const rph_km = (1.5 * Rs / 1000).toFixed(1);
+  const risco_km = (3 * Rs / 1000).toFixed(1);
+
+  // Deflection angle (weak field approx: α = 4GM/(bc²), b in units of Rs)
+  const b_m = state.impact * Rs;
+  const alpha_rad = 4 * G * M / (b_m * c * c);
+  const alpha_deg = (alpha_rad * 180 / Math.PI).toFixed(2);
+
+  // Gravitational redshift at photon sphere
+  const z = 1 / Math.sqrt(1 - (2/3)) - 1;
+
+  // Escape velocity at ISCO
+  const v_esc = Math.sqrt(2 * G * M / (3 * Rs)) / c;
+
+  document.getElementById('eq-rs').textContent = Rs_km + ' km';
+  document.getElementById('eq-rph').textContent = rph_km + ' km';
+  document.getElementById('eq-risco').textContent = risco_km + ' km';
+  document.getElementById('eq-alpha').textContent = alpha_deg + '°';
+  document.getElementById('eq-redshift').textContent = z.toFixed(3);
+  document.getElementById('eq-escape').textContent = v_esc.toFixed(3) + ' c';
+}
+
+// ─── RK4 GEODESIC INTEGRATION ─────────────────────────────────────────────
+// Binet equation: d²u/dφ² = -u + 3*m*u² where m = GM/c² (in Schwarzschild units, Rs=2)
+// u = 1/r in units of Rs/2
+
+function geodesicRHS(u, v) {
+  // d²u/dφ² = -u + 3u² (in Schwarzschild natural units where Rs/2 = 1)
+  return -u + 3 * u * u;
+}
+
+function integrateGeodesic(b_units, steps, dPhi) {
+  // b_units: impact parameter in units of Rs
+  // Initial conditions: photon coming from r=infinity
+  // u_0 ≈ 0, du/dphi_0 = 1/b
+  const Rs_units = 1; // normalized
+  const u0 = 0.001; // small initial u (far away)
+  const v0 = 1.0 / b_units; // du/dphi = 1/b
+
+  let u = u0, v = v0;
+  const pts = [];
+  let phi = 0;
+
+  for (let i = 0; i < steps; i++) {
+    // r in units of Rs
+    const r = u > 0.001 ? 1.0 / u : 9999;
+    pts.push({ r, phi });
+
+    // Captured by black hole
+    if (r < 0.55) break;
+    // Escaped to infinity  
+    if (r > 200 && i > 10) break;
+
+    // RK4
+    const k1u = v;
+    const k1v = geodesicRHS(u, v);
+
+    const k2u = v + 0.5 * dPhi * k1v;
+    const k2v = geodesicRHS(u + 0.5 * dPhi * k1u, k2u);
+
+    const k3u = v + 0.5 * dPhi * k2v;
+    const k3v = geodesicRHS(u + 0.5 * dPhi * k2u, k3u);
+
+    const k4u = v + dPhi * k3v;
+    const k4v = geodesicRHS(u + dPhi * k3u, k4u);
+
+    u += (dPhi / 6) * (k1u + 2*k2u + 2*k3u + k4u);
+    v += (dPhi / 6) * (k1v + 2*k2v + 2*k3v + k4v);
+    phi += dPhi;
+  }
+
+  return pts;
+}
+
+// Convert polar (r,phi) to canvas (x,y)
+function polarToCanvas(r, phi, cx, cy, scale) {
+  return {
+    x: cx + r * Math.cos(phi) * scale,
+    y: cy - r * Math.sin(phi) * scale
+  };
+}
+
+// ─── MAIN RENDER ──────────────────────────────────────────────────────────
+function render() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H / 2;
+  const Rs_px = 40; // Schwarzschild radius in pixels
+  const scale = Rs_px; // 1 Rs = scale pixels
+
+  // Background gradient
+  const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.7);
+  bgGrad.addColorStop(0, 'rgba(10,8,20,1)');
+  bgGrad.addColorStop(1, 'rgba(2,4,10,1)');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── SPACE GRID (gravitational lensing effect) ──
+  if (state.layers.grid) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(56,189,248,0.06)';
+    ctx.lineWidth = 0.5;
+    const gridSpacing = 30;
+    const Rs_grid = Rs_px; // Schwarzschild radius for grid warping
+
+    // Draw warped grid lines
+    for (let gx = -W; gx <= W*2; gx += gridSpacing) {
+      ctx.beginPath();
+      let first = true;
+      for (let gy = 0; gy <= H; gy += 3) {
+        const dx = gx - cx, dy = gy - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < Rs_grid * 0.5) { first = true; continue; }
+        // Warp: radial displacement outward based on 1/dist
+        const warp = Math.min(200, (Rs_grid * Rs_grid * 1.5) / (dist + 0.01));
+        const angle = Math.atan2(dy, dx);
+        const wx = gx - Math.cos(angle) * warp * 0.3;
+        const wy = gy - Math.sin(angle) * warp * 0.3;
+        if (first) { ctx.moveTo(wx, wy); first = false; }
+        else ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+    }
+    for (let gy = 0; gy <= H; gy += gridSpacing) {
+      ctx.beginPath();
+      let first = true;
+      for (let gx = -W*0.5; gx <= W*1.5; gx += 3) {
+        const dx = gx - cx, dy = gy - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < Rs_grid * 0.5) { first = true; continue; }
+        const warp = Math.min(200, (Rs_grid * Rs_grid * 1.5) / (dist + 0.01));
+        const angle = Math.atan2(dy, dx);
+        const wx = gx - Math.cos(angle) * warp * 0.3;
+        const wy = gy - Math.sin(angle) * warp * 0.3;
+        if (first) { ctx.moveTo(wx, wy); first = false; }
+        else ctx.lineTo(wx, wy);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ── ACCRETION DISK ──
+  if (state.layers.disk) {
+    const diskInner = Rs_px * 3;
+    const diskOuter = Rs_px * 8;
+    for (let ring = diskOuter; ring >= diskInner; ring -= 1.5) {
+      const t = (ring - diskInner) / (diskOuter - diskInner);
+      const alpha = t < 0.3 ? t / 0.3 * 0.5 : (1 - t) * 0.5;
+      // Color from blue-white (inner hot) to orange (outer cool)
+      const r_c = Math.round(t < 0.5 ? 200 + t*55 : 255);
+      const g_c = Math.round(t < 0.5 ? 180 - t*100 : 130 - t*80);
+      const b_c = Math.round(t < 0.3 ? 255 : 255 * (1 - t));
+
+      ctx.save();
+      ctx.scale(1, 0.28); // flatten to ellipse
+      ctx.beginPath();
+      ctx.arc(cx, cy / 0.28, ring, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${r_c},${g_c},${b_c},${alpha * 0.7})`;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Glow
+    const diskGlow = ctx.createRadialGradient(cx, cy, diskInner * 0.5, cx, cy, diskOuter * 0.9);
+    diskGlow.addColorStop(0, 'rgba(249,115,22,0.08)');
+    diskGlow.addColorStop(0.5, 'rgba(234,88,12,0.04)');
+    diskGlow.addColorStop(1, 'transparent');
+    ctx.fillStyle = diskGlow;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // ── PHOTON SPHERE RING ──
+  if (state.layers.sphere) {
+    const rph_px = Rs_px * 1.5;
+    // Dashed orbit ring
+    ctx.save();
+    ctx.setLineDash([4, 5]);
+    ctx.strokeStyle = 'rgba(249,115,22,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rph_px, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Label
+    ctx.fillStyle = 'rgba(249,115,22,0.7)';
+    ctx.font = '500 9px JetBrains Mono, monospace';
+    ctx.fillText('PHOTON SPHERE r = 1.5Rₛ', cx + rph_px + 6, cy - 4);
+    ctx.restore();
+
+    // Outer glow ring
+    const ringGrad = ctx.createRadialGradient(cx, cy, rph_px - 4, cx, cy, rph_px + 12);
+    ringGrad.addColorStop(0, 'rgba(249,115,22,0.15)');
+    ringGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = ringGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rph_px + 12, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── EVENT HORIZON ──
+  const eh_px = Rs_px * 0.5; // Rs/2 = event horizon
+  const ehGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rs_px * 1.2);
+  ehGrad.addColorStop(0, 'rgba(0,0,0,1)');
+  ehGrad.addColorStop(0.4, 'rgba(0,0,0,1)');
+  ehGrad.addColorStop(0.7, 'rgba(5,5,15,0.95)');
+  ehGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = ehGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, Rs_px * 1.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hard black disk
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(cx, cy, Rs_px * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Event horizon ring glow
+  const evGrad = ctx.createRadialGradient(cx, cy, Rs_px * 0.45, cx, cy, Rs_px * 0.7);
+  evGrad.addColorStop(0, 'rgba(249,115,22,0.4)');
+  evGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = evGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, Rs_px * 0.7, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── PHOTON GEODESICS ──
+  if (state.layers.rays) {
+    const numRays = state.rays;
+    // Spread impact parameters around user-selected value
+    const b_center = state.impact; // in Rs units
+    const b_min = 2.75;
+    const b_max = 20;
+
+    for (let i = 0; i < numRays; i++) {
+      // Distribute rays: some at user b, others spread around
+      let b_val;
+      if (numRays === 1) {
+        b_val = b_center;
+      } else {
+        const t = i / (numRays - 1);
+        b_val = b_min + t * (b_max - b_min);
+        // Bias toward selected impact parameter
+        b_val = b_val * 0.4 + b_center * 0.6 + (b_val - b_center) * 0.4;
+        b_val = Math.max(b_min, Math.min(b_max, b_val));
+      }
+
+      // Integrate both top and bottom rays (mirror)
+      for (let sign of [1, -1]) {
+        const pts = integrateGeodesic(b_val, 1200, 0.008);
+
+        if (pts.length < 3) continue;
+
+        // Color by proximity to photon sphere
+        const minR = Math.min(...pts.map(p => p.r));
+        const proximity = Math.max(0, 1 - (minR - 1.5) / 3);
+        const isCapture = minR < 1.0;
+
+        // Rotate so rays come from the left
+        const rotOffset = Math.PI;
+
+        ctx.beginPath();
+        let started = false;
+        for (let j = 0; j < pts.length; j++) {
+          const { r, phi } = pts[j];
+          const angle = rotOffset + sign * phi;
+          const px = cx + r * Math.cos(angle) * scale;
+          const py = cy + r * Math.sin(angle) * scale;
+
+          if (!started) { ctx.moveTo(px, py); started = true; }
+          else ctx.lineTo(px, py);
+        }
+
+        // Color: captured = red-orange, passing = cyan-white, selected = bright
+        const isSelected = Math.abs(b_val - b_center) < 0.3;
+        let strokeColor;
+        if (isCapture) {
+          strokeColor = `rgba(239,68,68,${isSelected ? 0.9 : 0.4})`;
+        } else if (proximity > 0.6) {
+          strokeColor = `rgba(249,115,22,${isSelected ? 1.0 : 0.5})`;
+        } else {
+          const a = isSelected ? 0.85 : 0.25 + proximity * 0.3;
+          strokeColor = `rgba(56,189,248,${a})`;
+        }
+
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = isSelected ? 1.8 : 0.9;
+        ctx.stroke();
+      }
+    }
+
+    // Highlight the exact selected ray with label
+    const pts_sel = integrateGeodesic(b_center, 1200, 0.008);
+    if (pts_sel.length > 5) {
+      const midIdx = Math.floor(pts_sel.length * 0.25);
+      const { r: rm, phi: phim } = pts_sel[midIdx];
+      const lx = cx + rm * Math.cos(Math.PI + phim) * scale;
+      const ly = cy + rm * Math.sin(Math.PI + phim) * scale;
+
+      ctx.fillStyle = 'rgba(56,189,248,0.85)';
+      ctx.font = '500 9px JetBrains Mono, monospace';
+      ctx.fillText(`b = ${b_center.toFixed(1)} Rₛ`, lx + 6, ly - 6);
+    }
+  }
+
+  // ── Rs LABEL ──
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 0.5;
+  ctx.setLineDash([3,4]);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Rs_px * 0.5, cy);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  ctx.font = '9px JetBrains Mono, monospace';
+  ctx.fillText('Rₛ/2', cx + Rs_px * 0.5 + 4, cy + 4);
+  ctx.restore();
+}
+
+// Init
+updateReadout();
+render();
+</script>
+</body>
+</html>
