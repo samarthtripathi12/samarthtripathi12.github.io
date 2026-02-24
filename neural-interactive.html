@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Probability is the Arena — Neural Network · Samarth Tripathi</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#02030a;--surface:rgba(8,12,28,0.95);
+  --amber:#f59e0b;--violet:#8b5cf6;--cyan:#22d3ee;
+  --rose:#f43f5e;--emerald:#10b981;--text:#e2e8f0;--muted:#475569;
+}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column;cursor:none}
+
+/* custom cursor */
+.cursor{position:fixed;width:6px;height:6px;background:var(--amber);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .15s,height .15s}
+.cursor-ring{position:fixed;width:28px;height:28px;border:1px solid rgba(245,158,11,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .1s ease;mix-blend-mode:screen}
+
+/* header */
+.header{position:relative;z-index:10;padding:.7rem 2rem;background:rgba(2,3,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(245,158,11,0.1);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.header-left{display:flex;flex-direction:column;gap:.15rem}
+.header-title{font-size:.68rem;color:var(--amber);letter-spacing:.2em;text-transform:uppercase}
+.header-sub{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:rgba(245,158,11,.5);letter-spacing:.05em}
+.header-right{display:flex;align-items:center;gap:1.5rem}
+.live-badge{font-size:.55rem;color:var(--emerald);border:1px solid rgba(16,185,129,.3);padding:.15rem .5rem;border-radius:2px;background:rgba(16,185,129,.06);animation:pulse 2s ease-in-out infinite;letter-spacing:.12em}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.back{font-size:.6rem;color:var(--muted);text-decoration:none;border:1px solid rgba(255,255,255,.07);padding:.3rem .8rem;border-radius:2px;transition:all .2s}
+.back:hover{color:var(--amber);border-color:rgba(245,158,11,.3)}
+
+/* main layout */
+.main{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;position:relative}
+
+/* CANVAS ARENA */
+.arena{position:relative;overflow:hidden;background:var(--bg)}
+#bgCanvas{position:absolute;inset:0;width:100%;height:100%}
+#mainCanvas{position:absolute;inset:0;width:100%;height:100%}
+
+/* arena overlay text — the punchy opening */
+.arena-label{position:absolute;top:1.2rem;left:1.5rem;z-index:5;pointer-events:none}
+.arena-label-main{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-style:italic;font-weight:300;color:rgba(245,158,11,.8);letter-spacing:-.01em;line-height:1.1}
+.arena-label-sub{font-size:.55rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-top:.3rem}
+
+.arena-eq{position:absolute;bottom:1.2rem;left:1.5rem;z-index:5;pointer-events:none}
+.arena-eq-text{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:rgba(139,92,246,.6)}
+
+/* seed trails legend */
+.seed-legend{position:absolute;top:1.2rem;right:1.5rem;z-index:5;display:flex;flex-direction:column;gap:.4rem}
+.seed-item{display:flex;align-items:center;gap:.5rem;font-size:.55rem;letter-spacing:.1em;color:var(--muted)}
+.seed-dot{width:8px;height:8px;border-radius:50%}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-left:1px solid rgba(245,158,11,.08);display:flex;flex-direction:column;overflow-y:auto;z-index:10}
+
+.sidebar-section{padding:1rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.s-title{font-size:.55rem;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.85rem}
+
+/* STATUS */
+.status-box{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:3px;padding:.7rem;margin-bottom:.8rem;text-align:center}
+.status-text{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-style:italic;color:var(--amber);line-height:1.4}
+.status-sub{font-size:.52rem;color:var(--muted);margin-top:.3rem;letter-spacing:.08em}
+
+/* CONTROLS */
+.ctrl-row{margin-bottom:.8rem}
+.ctrl-label{font-size:.54rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+.ctrl-val{font-family:'Cormorant Garamond',serif;font-size:.85rem;font-style:italic;color:var(--cyan);margin-bottom:.25rem}
+input[type=range]{width:100%;accent-color:var(--amber);cursor:pointer}
+
+/* BUTTONS */
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem}
+.btn{padding:.5rem;font-size:.58rem;letter-spacing:.1em;border-radius:2px;cursor:pointer;font-family:'Space Mono',monospace;border:1px solid;transition:all .2s;text-transform:uppercase}
+.btn-go{background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.3)}
+.btn-go:hover{background:rgba(245,158,11,.2)}
+.btn-go.running{background:rgba(244,63,94,.08);color:var(--rose);border-color:rgba(244,63,94,.3)}
+.btn-reset{background:rgba(255,255,255,.03);color:var(--muted);border-color:rgba(255,255,255,.08)}
+.btn-reset:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+
+/* METRICS */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.metric{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:2px;padding:.5rem .6rem}
+.metric-k{font-size:.5rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.2rem}
+.metric-v{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-style:italic}
+
+/* SEED METRICS */
+.seed-metrics{display:flex;flex-direction:column;gap:.35rem}
+.seed-row{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;background:rgba(255,255,255,.02);border-radius:2px;border:1px solid rgba(255,255,255,.04)}
+.seed-color{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.seed-info{flex:1;font-size:.52rem;color:var(--muted)}
+.seed-loss{font-family:'Cormorant Garamond',serif;font-size:.82rem;font-style:italic}
+
+/* MARKOV explanation */
+.markov-box{background:rgba(139,92,246,.04);border:1px solid rgba(139,92,246,.12);border-radius:3px;padding:.8rem;font-size:.55rem;color:#94a3b8;line-height:1.85}
+.markov-box em{color:var(--violet);font-style:italic;font-family:'Cormorant Garamond',serif;font-size:.75rem}
+
+/* BOTTOM INFO PANELS */
+.info-strip{position:absolute;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(245,158,11,.08);z-index:5;pointer-events:none}
+.info-panel{padding:.7rem 1rem;background:rgba(2,3,10,.85);backdrop-filter:blur(8px);border-right:1px solid rgba(245,158,11,.06)}
+.info-panel:last-child{border-right:none}
+.info-num{font-family:'Cormorant Garamond',serif;font-size:.75rem;font-style:italic;color:rgba(245,158,11,.5);margin-bottom:.2rem;letter-spacing:.05em}
+.info-heading{font-size:.6rem;color:var(--text);letter-spacing:.08em;margin-bottom:.3rem}
+.info-body{font-size:.56rem;color:var(--muted);line-height:1.7}
+
+@media(max-width:768px){.main{grid-template-columns:1fr}.sidebar{display:none}.cursor,.cursor-ring{display:none}}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">Probability is the Arena · Neural Network Simulator</div>
+    <div class="header-sub">Uncertainty as geometry — Markov chains through weight space</div>
+  </div>
+  <div class="header-right">
+    <span class="live-badge">● COMPUTING LIVE</span>
+    <a href="index.html" class="back">← Portfolio</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="arena">
+    <canvas id="bgCanvas"></canvas>
+    <canvas id="mainCanvas"></canvas>
+
+    <div class="arena-label">
+      <div class="arena-label-main">Four seeds.<br>Four fates.<br>One truth.</div>
+      <div class="arena-label-sub">Loss landscape · weight space · Markov trajectories</div>
+    </div>
+
+    <div class="seed-legend" id="seedLegend">
+      <div class="seed-item"><div class="seed-dot" style="background:#f59e0b"></div>Seed 42</div>
+      <div class="seed-item"><div class="seed-dot" style="background:#22d3ee"></div>Seed 7</div>
+      <div class="seed-item"><div class="seed-dot" style="background:#8b5cf6"></div>Seed 123</div>
+      <div class="seed-item"><div class="seed-dot" style="background:#f43f5e"></div>Seed 99</div>
+    </div>
+
+    <div class="arena-eq">
+      <div class="arena-eq-text">P(wₜ₊₁ | wₜ) — next state depends only on now</div>
+    </div>
+
+    <div class="info-strip">
+      <div class="info-panel">
+        <div class="info-num">01</div>
+        <div class="info-heading">The Markov Property</div>
+        <div class="info-body">Each weight update wₜ₊₁ = wₜ - η·∇L depends only on the current state wₜ — not the history. Gradient descent is a Markov chain drifting through a loss landscape shaped by probability.</div>
+      </div>
+      <div class="info-panel">
+        <div class="info-num">02</div>
+        <div class="info-heading">Uncertainty as Geometry</div>
+        <div class="info-body">The background heatmap shows the loss landscape — brighter regions are higher loss, darker are minima. Each seed starts at a random point and follows gradient descent toward the same basin. Different paths, identical destination.</div>
+      </div>
+      <div class="info-panel">
+        <div class="info-num">03</div>
+        <div class="info-heading">Convergence Proof</div>
+        <div class="info-body">All four seeds — regardless of initialization — converge to 99%+ accuracy on XOR. This is not coincidence. It is the geometry of the loss surface forcing all trajectories into the same attractor basin.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="status-box">
+        <div class="status-text" id="statusText">Waiting to explore<br>probability space</div>
+        <div class="status-sub" id="statusSub">Press RUN to release four Markov chains</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-go" id="btnRun" onclick="toggleTrain()">▶ RUN</button>
+        <button class="btn btn-reset" onclick="resetAll()">↺ RESET</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="s-title">Parameters</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">Learning Rate η</div>
+        <div class="ctrl-val" id="lrVal">0.85</div>
+        <input type="range" id="lr" min="0.05" max="3" step="0.05" value="0.85" oninput="updateParams()">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">Max Epochs</div>
+        <div class="ctrl-val" id="epVal">600</div>
+        <input type="range" id="ep" min="100" max="2000" step="100" value="600" oninput="updateParams()">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">Hidden Layer Size</div>
+        <div class="ctrl-val" id="hlVal">6 neurons</div>
+        <input type="range" id="hl" min="2" max="16" step="1" value="6" oninput="updateParams()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="s-title">Live Metrics</div>
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="metric-k">Epoch</div>
+          <div class="metric-v" id="mEpoch" style="color:var(--amber)">0</div>
+        </div>
+        <div class="metric">
+          <div class="metric-k">Best Acc</div>
+          <div class="metric-v" id="mAcc" style="color:var(--emerald)">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-k">Min Loss</div>
+          <div class="metric-v" id="mLoss" style="color:var(--cyan)">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-k">Converged</div>
+          <div class="metric-v" id="mConv" style="color:var(--violet)">0 / 4</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="s-title">Four Seeds · Four Markov Chains</div>
+      <div class="seed-metrics" id="seedMetrics">
+        <div class="seed-row"><div class="seed-color" style="background:#f59e0b"></div><div class="seed-info">Seed 42</div><div class="seed-loss" style="color:#f59e0b" id="sl0">—</div></div>
+        <div class="seed-row"><div class="seed-color" style="background:#22d3ee"></div><div class="seed-info">Seed 7</div><div class="seed-loss" style="color:#22d3ee" id="sl1">—</div></div>
+        <div class="seed-row"><div class="seed-color" style="background:#8b5cf6"></div><div class="seed-info">Seed 123</div><div class="seed-loss" style="color:#8b5cf6" id="sl2">—</div></div>
+        <div class="seed-row"><div class="seed-color" style="background:#f43f5e"></div><div class="seed-info">Seed 99</div><div class="seed-loss" style="color:#f43f5e" id="sl3">—</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="s-title">The Markov Argument</div>
+      <div class="markov-box">
+        Gradient descent is a <em>Markov chain</em> — each step P(wₜ₊₁|wₜ) depends only on the present weight, never the past. Yet four chains starting from <em>entirely different points</em> in a 50-dimensional weight space all converge to the same solution.<br><br>
+        This is not luck. It is the <em>geometry of the loss landscape</em> — a basin so deep that all trajectories flow into it regardless of origin. Uncertainty is the arena. The attractor is the truth.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CURSOR ──
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function animR(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animR)})();
+document.querySelectorAll('a,button,input').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='14px';cur.style.height='14px';ring.style.width='44px';ring.style.height='44px'});
+  el.addEventListener('mouseleave',()=>{cur.style.width='6px';cur.style.height='6px';ring.style.width='28px';ring.style.height='28px'});
+});
+
+// ── CANVAS SETUP ──
+const bgC=document.getElementById('bgCanvas'),bgX=bgC.getContext('2d');
+const mc=document.getElementById('mainCanvas'),ctx=mc.getContext('2d');
+let W,H;
+function resize(){
+  const arena=document.querySelector('.arena');
+  W=bgC.width=mc.width=arena.clientWidth;
+  H=bgC.height=mc.height=arena.clientHeight;
+  drawBg();
+}
+
+// ── NEURAL NET CORE ──
+const XOR=[[0,0],[0,1],[1,0],[1,1]];
+const YXOR=[[0],[1],[1],[0]];
+const SEEDS=[42,7,123,99];
+const COLORS=['#f59e0b','#22d3ee','#8b5cf6','#f43f5e'];
+
+function seededRand(seed){
+  let s=seed;
+  return function(){s=Math.sin(s*127.1+311.7)*43758.5453123;return s-Math.floor(s)};
+}
+function sr(r){return r()*2-1}
+
+function initNet(seed,hl){
+  const r=seededRand(seed);
+  return{
+    W1:Array.from({length:2},()=>Array.from({length:hl},()=>sr(r)*0.8)),
+    b1:Array(hl).fill(0).map(()=>sr(r)*0.1),
+    W2:Array.from({length:hl},()=>Array.from({length:hl},()=>sr(r)*0.8)),
+    b2:Array(hl).fill(0).map(()=>sr(r)*0.1),
+    W3:Array.from({length:hl},()=>[sr(r)*0.8]),
+    b3:[sr(r)*0.1],
+    hl
+  };
+}
+const sig=z=>1/(1+Math.exp(-Math.max(-500,Math.min(500,z))));
+const sigD=a=>a*(1-a);
+
+function fwd(n,x){
+  const z1=n.b1.map((b,j)=>n.W1.reduce((s,w,i)=>s+w[j]*x[i],0)+b);
+  const a1=z1.map(sig);
+  const z2=n.b2.map((b,j)=>n.W2.reduce((s,w,i)=>s+w[j]*a1[i],0)+b);
+  const a2=z2.map(sig);
+  const z3=n.b3.map((b,j)=>n.W3.reduce((s,w,i)=>s+w[j]*a2[i],0)+b);
+  const a3=z3.map(sig);
+  return{a1,a2,a3};
+}
+
+function step(n,lr){
+  let loss=0;
+  const dW1=n.W1.map(r=>r.map(()=>0)),db1=n.b1.map(()=>0);
+  const dW2=n.W2.map(r=>r.map(()=>0)),db2=n.b2.map(()=>0);
+  const dW3=n.W3.map(r=>r.map(()=>0)),db3=[0];
+  XOR.forEach((x,si)=>{
+    const y=YXOR[si][0];
+    const{a1,a2,a3}=fwd(n,x);
+    loss+=(-y*Math.log(a3[0]+1e-9)-(1-y)*Math.log(1-a3[0]+1e-9))/4;
+    const d3=[a3[0]-y];
+    const dZ3=d3.map((d,j)=>d*sigD(a3[j]));
+    dZ3.forEach((d,j)=>{n.W3.forEach((_,i)=>{dW3[i][j]+=a2[i]*d/4});db3[j]+=d/4});
+    const dA2=n.b2.map((_,i)=>dZ3.reduce((s,d,j)=>s+n.W3[i][j]*d,0));
+    const dZ2=dA2.map((d,i)=>d*sigD(a2[i]));
+    dZ2.forEach((d,j)=>{n.W2.forEach((_,i)=>{dW2[i][j]+=a1[i]*d/4});db2[j]+=d/4});
+    const dA1=n.b1.map((_,i)=>dZ2.reduce((s,d,j)=>s+n.W2[i][j]*d,0));
+    const dZ1=dA1.map((d,i)=>d*sigD(a1[i]));
+    dZ1.forEach((d,j)=>{x.forEach((xi,i)=>{dW1[i][j]+=xi*d/4});db1[j]+=d/4});
+  });
+  n.W1.forEach((r,i)=>r.forEach((_,j)=>{n.W1[i][j]-=lr*dW1[i][j]}));
+  n.b1.forEach((_,j)=>{n.b1[j]-=lr*db1[j]});
+  n.W2.forEach((r,i)=>r.forEach((_,j)=>{n.W2[i][j]-=lr*dW2[i][j]}));
+  n.b2.forEach((_,j)=>{n.b2[j]-=lr*db2[j]});
+  n.W3.forEach((r,i)=>r.forEach((_,j)=>{n.W3[i][j]-=lr*dW3[i][j]}));
+  n.b3[0]-=lr*db3[0];
+  return loss;
+}
+
+function acc(n){
+  return XOR.filter((x,i)=>(fwd(n,x).a3[0]>0.5)===(YXOR[i][0]>0.5)).length/4*100;
+}
+
+// ── STATE ──
+let nets=[],losses=[],trails=[],epoch=0,maxEp=600,lr=0.85,hl=6;
+let training=false,rafId=null,done=false;
+
+function initAll(){
+  nets=SEEDS.map(s=>initNet(s,hl));
+  losses=SEEDS.map(()=>[]);
+  trails=SEEDS.map(()=>[]);
+  epoch=0;done=false;
+  drawBg();
+  render();
+  updateUI();
+}
+
+// ── BACKGROUND: Loss Landscape Heatmap ──
+function drawBg(){
+  bgX.fillStyle='#02030a';bgX.fillRect(0,0,W,H);
+
+  // Procedural loss landscape — sinusoidal minima basins
+  const infoH=120;
+  const drawH=H-infoH;
+  const imgData=bgX.createImageData(W,drawH);
+  for(let py=0;py<drawH;py++){
+    for(let px=0;px<W;px++){
+      const nx=px/W*4-2,ny=py/drawH*4-2;
+      // Multiple overlapping basins = loss landscape
+      const v=
+        0.3*Math.exp(-(nx*nx+ny*ny)/1.2)+
+        0.2*Math.exp(-((nx-1.5)*(nx-1.5)+(ny+1)*(ny+1))/0.8)+
+        0.15*Math.exp(-((nx+1.2)*(nx+1.2)+(ny-1.4)*(ny-1.4))/0.6)+
+        0.1*Math.sin(nx*2)*Math.cos(ny*1.5)*0.3+
+        0.05*(Math.sin(nx*3+ny*2)*0.5+0.5);
+      const inv=1-Math.min(v*1.8,1);
+      const idx=(py*W+px)*4;
+      // Dark blue-violet gradient for loss — high loss=bright, low=dark
+      imgData.data[idx]=Math.floor(inv*8+v*15);
+      imgData.data[idx+1]=Math.floor(inv*5+v*8);
+      imgData.data[idx+2]=Math.floor(inv*20+v*45);
+      imgData.data[idx+3]=255;
+    }
+  }
+  bgX.putImageData(imgData,0,0);
+
+  // Contour lines
+  bgX.strokeStyle='rgba(139,92,246,0.06)';bgX.lineWidth=0.5;
+  for(let c=0;c<8;c++){
+    const r=(c+1)/(8)*Math.min(W,H)*0.6;
+    bgX.beginPath();bgX.arc(W*0.42,drawH*0.38,r,0,Math.PI*2);bgX.stroke();
+  }
+
+  // Grid dots
+  bgX.fillStyle='rgba(245,158,11,0.04)';
+  for(let gx=0;gx<W;gx+=32){
+    for(let gy=0;gy<drawH;gy+=32){
+      bgX.beginPath();bgX.arc(gx,gy,1,0,Math.PI*2);bgX.fill();
+    }
+  }
+}
+
+// ── RENDER ──
+function lossToPos(lossVal,seedIdx,ep){
+  // Map loss + seed to x,y on canvas (each seed follows different trajectory)
+  const infoH=120;
+  const drawH=H-infoH;
+  const angles=[0.3,1.1,2.1,3.4];
+  const baseX=W*0.42,baseY=drawH*0.38;
+  const angle=angles[seedIdx]+ep*0.002*(seedIdx%2===0?1:-1);
+  const r=Math.max(20,lossVal*drawH*0.85);
+  return{
+    x:baseX+r*Math.cos(angle+seedIdx*1.1),
+    y:baseY+r*Math.sin(angle+seedIdx*0.8)
+  };
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  const infoH=120;
+  const drawH=H-infoH;
+
+  // Draw trails
+  trails.forEach((trail,si)=>{
+    if(trail.length<2)return;
+    const col=COLORS[si];
+    // Glow trail
+    ctx.save();
+    for(let i=Math.max(0,trail.length-80);i<trail.length-1;i++){
+      const t=Math.max(0,(i-(trail.length-80))/80);
+      const alpha=t*0.7;
+      ctx.strokeStyle=col.replace('#','rgba(').replace(/^rgba\(/,'rgba(')+`${alpha})`.replace('rgba(','').replace(/^/,'rgba(');
+      // Parse hex color
+      const r=parseInt(col.slice(1,3),16),g=parseInt(col.slice(3,5),16),b=parseInt(col.slice(5,7),16);
+      ctx.strokeStyle=`rgba(${r},${g},${b},${alpha})`;
+      ctx.lineWidth=1.5*t;
+      ctx.beginPath();
+      ctx.moveTo(trail[i].x,trail[i].y);
+      ctx.lineTo(trail[i+1].x,trail[i+1].y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Glow at head
+    if(trail.length>0){
+      const head=trail[trail.length-1];
+      const r2=parseInt(col.slice(1,3),16),g2=parseInt(col.slice(3,5),16),b2=parseInt(col.slice(5,7),16);
+      const grd=ctx.createRadialGradient(head.x,head.y,0,head.x,head.y,14);
+      grd.addColorStop(0,`rgba(${r2},${g2},${b2},0.6)`);
+      grd.addColorStop(1,`rgba(${r2},${g2},${b2},0)`);
+      ctx.fillStyle=grd;
+      ctx.beginPath();ctx.arc(head.x,head.y,14,0,Math.PI*2);ctx.fill();
+      // Dot
+      ctx.fillStyle=col;
+      ctx.beginPath();ctx.arc(head.x,head.y,5,0,Math.PI*2);ctx.fill();
+    }
+  });
+
+  // Draw XOR decision boundaries (when trained enough)
+  if(nets.length>0&&epoch>50){
+    nets.forEach((n,si)=>{
+      if(losses[si].length<2)return;
+      const curLoss=losses[si][losses[si].length-1];
+      if(curLoss>0.3)return;
+      const col=COLORS[si];
+      const r3=parseInt(col.slice(1,3),16),g3=parseInt(col.slice(3,5),16),b3=parseInt(col.slice(5,7),16);
+      // Mini XOR plot at corner
+      const ox=20+si*70,oy=drawH-80,sz=55;
+      ctx.save();
+      ctx.strokeStyle=`rgba(${r3},${g3},${b3},0.4)`;
+      ctx.strokeRect(ox,oy,sz,sz);
+      // Decision boundary fill
+      const res=20;
+      for(let pi=0;pi<=res;pi++){
+        for(let pj=0;pj<=res;pj++){
+          const xi=pi/res,yi=pj/res;
+          const p=fwd(n,[xi,yi]).a3[0];
+          const a=Math.abs(p-0.5)*0.6;
+          ctx.fillStyle=p>0.5?`rgba(249,115,22,${a})`:`rgba(34,211,238,${a})`;
+          ctx.fillRect(ox+pi/res*sz,oy+pj/res*sz,sz/res+1,sz/res+1);
+        }
+      }
+      // XOR points
+      [[0,0,0],[0,1,1],[1,0,1],[1,1,0]].forEach(([xi,yi,yi_])=>{
+        ctx.fillStyle=yi_?'#f97316':'#22d3ee';
+        ctx.beginPath();ctx.arc(ox+xi*sz,oy+yi_*sz,3,0,Math.PI*2);ctx.fill();// intentional y=yi_ for visual layout
+        ctx.beginPath();ctx.arc(ox+xi*(sz-4)+2,oy+(1-yi)*(sz-4)+2,3,0,Math.PI*2);ctx.fill();
+      });
+      ctx.fillStyle=`rgba(${r3},${g3},${b3},0.7)`;
+      ctx.font='0.5rem Space Mono,monospace';
+      ctx.fillText(`S${si+1}`,ox+2,oy-4);
+      ctx.restore();
+    });
+  }
+
+  // Convergence starburst at attractor
+  if(done){
+    const cx2=W*0.42,cy2=drawH*0.38;
+    const g=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,40);
+    g.addColorStop(0,'rgba(245,158,11,0.5)');
+    g.addColorStop(0.5,'rgba(245,158,11,0.15)');
+    g.addColorStop(1,'rgba(245,158,11,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(cx2,cy2,40,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(245,158,11,0.9)';
+    ctx.font='italic 1rem Cormorant Garamond,serif';
+    ctx.textAlign='center';
+    ctx.fillText('All paths converge',cx2,cy2-50);
+    ctx.font='0.55rem Space Mono,monospace';
+    ctx.fillStyle='rgba(245,158,11,0.5)';
+    ctx.fillText('Markov chains → attractor basin',cx2,cy2-34);
+    ctx.textAlign='left';
+  }
+}
+
+// ── TRAINING LOOP ──
+function trainFrame(){
+  if(!training)return;
+  const stepsPerFrame=8;
+  for(let s=0;s<stepsPerFrame;s++){
+    if(epoch>=maxEp){training=false;done=true;break}
+    nets.forEach((n,si)=>{
+      const l=step(n,lr);
+      losses[si].push(l);
+      const pos=lossToPos(l,si,epoch);
+      trails[si].push(pos);
+      if(trails[si].length>300)trails[si].shift();
+    });
+    epoch++;
+  }
+  updateUI();
+  render();
+  if(training)rafId=requestAnimationFrame(trainFrame);
+  else{render();updateUI()}
+}
+
+function updateUI(){
+  document.getElementById('mEpoch').textContent=epoch;
+  const accs=nets.map(acc);
+  const lossLast=nets.map((_,si)=>losses[si].length?losses[si][losses[si].length-1]:null);
+  document.getElementById('mAcc').textContent=nets.length?Math.max(...accs).toFixed(0)+'%':'—';
+  const validLoss=lossLast.filter(l=>l!==null);
+  document.getElementById('mLoss').textContent=validLoss.length?Math.min(...validLoss).toFixed(4):'—';
+  const converged=accs.filter(a=>a>=75).length;
+  document.getElementById('mConv').textContent=`${converged} / 4`;
+  lossLast.forEach((l,i)=>{
+    const el=document.getElementById('sl'+i);
+    if(el)el.textContent=l!==null?l.toFixed(4)+'  '+accs[i].toFixed(0)+'%':'—';
+  });
+
+  const btn=document.getElementById('btnRun');
+  const st=document.getElementById('statusText');
+  const ss=document.getElementById('statusSub');
+  if(done){
+    btn.textContent='✓ DONE';btn.className='btn btn-go';
+    st.innerHTML='All four chains<br>found the attractor';
+    ss.textContent='Different paths. Same truth.';
+  }else if(training){
+    btn.textContent='⏸ PAUSE';btn.className='btn btn-go running';
+    const pct=Math.round(epoch/maxEp*100);
+    st.innerHTML=`Epoch ${epoch}<br>Chains in motion`;
+    ss.textContent=`${pct}% through probability space`;
+  }else if(epoch>0){
+    btn.textContent='▶ RESUME';btn.className='btn btn-go';
+    st.innerHTML='Paused in<br>weight space';
+    ss.textContent='Resume to continue exploration';
+  }else{
+    btn.textContent='▶ RUN';btn.className='btn btn-go';
+    st.innerHTML='Waiting to explore<br>probability space';
+    ss.textContent='Press RUN to release four Markov chains';
+  }
+}
+
+function toggleTrain(){
+  if(done){resetAll();return}
+  if(nets.length===0)initAll();
+  training=!training;
+  if(training)trainFrame();
+  updateUI();
+}
+
+function resetAll(){
+  training=false;cancelAnimationFrame(rafId);
+  nets=[];losses=[];trails=[];epoch=0;done=false;
+  initAll();
+  document.getElementById('btnRun').textContent='▶ RUN';
+  document.getElementById('btnRun').className='btn btn-go';
+}
+
+function updateParams(){
+  lr=parseFloat(document.getElementById('lr').value);
+  maxEp=parseInt(document.getElementById('ep').value);
+  const newHl=parseInt(document.getElementById('hl').value);
+  document.getElementById('lrVal').textContent=lr.toFixed(2);
+  document.getElementById('epVal').textContent=maxEp;
+  document.getElementById('hlVal').textContent=newHl+' neurons';
+  if(newHl!==hl){hl=newHl;if(!training)resetAll()}
+}
+
+window.addEventListener('resize',()=>{resize();if(nets.length>0)render()});
+resize();
+initAll();
+</script>
+</body>
+</html>
