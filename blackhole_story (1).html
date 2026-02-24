@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project I — Reconstructing Light | Samarth Tripathi</title>
+  <meta name="description" content="Numerical geodesics in Schwarzschild spacetime — a first-principles computational study of photon trajectories near black holes."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#07090f;--surface:#0d1117;--surface2:#111827;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--accent:#38bdf8;--accent2:#818cf8;--gold:#f59e0b;--green:#34d399;--text:#e2e8f0;--muted:#64748b;--card:#0b1120}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");opacity:0.55}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0.95rem 5vw;background:rgba(7,9,15,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:background 0.3s}
+    .nav-logo{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent);letter-spacing:0.12em;text-decoration:none}
+    .nav-links{display:flex;gap:2.5rem;list-style:none}
+    .nav-links a{text-decoration:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.2s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--accent);transform:scaleX(0);transition:transform 0.25s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-links a:hover::after{transform:scaleX(1)}
+    .nav-links a.active{color:var(--accent)}
+    .nav-links a.active::after{transform:scaleX(1)}
+
+    /* HERO */
+    .story-hero{min-height:62vh;display:flex;align-items:flex-end;padding:9rem 5vw 4.5rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+    .story-hero-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(56,189,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.03) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 90% 80% at 20% 0%,black 30%,transparent 100%)}
+    .story-hero-orb{position:absolute;z-index:0;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.07) 0%,transparent 65%);top:-240px;right:-100px;pointer-events:none;animation:orbFloat 9s ease-in-out infinite}
+    @keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,-18px)}}
+    .story-hero-inner{position:relative;z-index:2;width:100%;max-width:860px}
+    .story-back{display:inline-flex;align-items:center;gap:0.5rem;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);text-decoration:none;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2.5rem;transition:color 0.2s;animation:fadeUp 0.5s 0.05s ease both}
+    .story-back:hover{color:var(--accent)}
+    .story-back::before{content:'←';font-size:0.8rem}
+    .story-eyebrow{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;animation:fadeUp 0.5s 0.1s ease both}
+    .story-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--accent)}
+    .story-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.6rem,6vw,4.8rem);line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.2rem;animation:fadeUp 0.5s 0.18s ease both}
+    .story-hero h1 em{color:var(--accent);font-style:italic}
+    .story-hero-sub{font-size:0.9rem;color:#7a8faf;max-width:580px;line-height:1.85;animation:fadeUp 0.5s 0.26s ease both}
+    .story-meta{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2rem;padding-top:1.8rem;border-top:1px solid var(--border);animation:fadeUp 0.5s 0.34s ease both}
+    .meta-item{display:flex;flex-direction:column;gap:0.18rem}
+    .meta-label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.16em;text-transform:uppercase}
+    .meta-val{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent);letter-spacing:0.05em}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    /* READING PROGRESS */
+    .progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:300;transition:width 0.1s linear;width:0%}
+
+    /* ARTICLE LAYOUT */
+    .article-wrap{max-width:780px;margin:0 auto;padding:0 5vw}
+    .article-body{padding:5rem 0 7rem}
+
+    /* SECTION BLOCKS */
+    .s-block{margin-bottom:4.5rem;animation:fadeUp 0.6s ease both;opacity:0}
+    .s-block.visible{opacity:1}
+    .s-number{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.6rem}
+    .s-number::before{content:'';display:block;width:16px;height:1px;background:var(--accent)}
+    .s-block h2{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.15;letter-spacing:-0.02em;margin-bottom:1.6rem;color:var(--text)}
+    .s-block p{font-size:0.92rem;color:#8898b8;line-height:1.95;margin-bottom:1.15rem}
+    .s-block p:last-child{margin-bottom:0}
+    .s-block strong{color:#c4d4e8;font-weight:500}
+    .s-block em{color:var(--accent);font-style:normal}
+
+    /* PULL QUOTE */
+    .pull-quote{border-left:3px solid var(--accent);padding:1.2rem 1.6rem;margin:2.2rem 0;background:rgba(56,189,248,0.04);border-radius:0 4px 4px 0}
+    .pull-quote p{font-family:'DM Serif Display',serif;font-size:1.08rem;font-style:italic;color:#b8cce0;line-height:1.65;margin:0}
+    .pull-quote p em{color:var(--accent);font-style:normal}
+
+    /* EQUATION BLOCK */
+    .eq-block{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1.4rem 1.6rem;margin:2rem 0;font-family:'DM Mono',monospace;font-size:0.82rem;color:#a5c0d8;line-height:2;letter-spacing:0.04em;overflow-x:auto}
+    .eq-label{font-size:0.58rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:0.6rem;display:block}
+    .eq-block .eq-main{color:var(--accent);font-size:0.88rem}
+
+    /* FAILURE CARD */
+    .failure-block{background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.14);border-radius:4px;padding:1.6rem;margin:2rem 0}
+    .failure-block-head{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem}
+    .failure-tag{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gold);letter-spacing:0.14em;text-transform:uppercase;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:0.15rem 0.55rem;border-radius:2px}
+    .failure-block p{font-size:0.88rem;color:#8898b8;line-height:1.9;margin-bottom:0.8rem}
+    .failure-block p:last-child{margin-bottom:0}
+    .failure-block strong{color:#e2c97a;font-weight:400}
+
+    /* INSIGHT CARD */
+    .insight-block{background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.18);border-radius:4px;padding:1.6rem;margin:2rem 0}
+    .insight-tag{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--accent2);letter-spacing:0.14em;text-transform:uppercase;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.2);padding:0.15rem 0.55rem;border-radius:2px;display:inline-block;margin-bottom:1rem}
+    .insight-block p{font-size:0.88rem;color:#8898b8;line-height:1.9;margin-bottom:0.8rem}
+    .insight-block p:last-child{margin-bottom:0}
+    .insight-block strong{color:#a5aaee;font-weight:400}
+
+    /* HUMILITY BLOCK */
+    .humility-block{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.6rem 0;margin:2rem 0}
+    .humility-list{list-style:none;display:flex;flex-direction:column;gap:0.55rem;margin-top:1rem}
+    .humility-list li{display:flex;align-items:flex-start;gap:0.75rem;font-size:0.88rem;color:#7a8faf;line-height:1.7}
+    .humility-list li::before{content:'—';font-family:'DM Mono',monospace;color:var(--muted);flex-shrink:0;margin-top:0.05rem}
+
+    /* DIVIDER */
+    .s-divider{width:100%;height:1px;background:var(--border);margin:3rem 0}
+    .s-divider-dot{display:flex;align-items:center;justify-content:center;gap:1.2rem;margin:3rem 0;color:var(--border);font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.2em}
+    .s-divider-dot::before,.s-divider-dot::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* BOTTOM NAV */
+    .story-nav-bottom{border-top:1px solid var(--border);padding:2.5rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;background:var(--surface)}
+    .snb-prev,.snb-next{display:flex;flex-direction:column;gap:0.25rem;text-decoration:none;transition:color 0.2s;max-width:260px}
+    .snb-prev{align-items:flex-start}
+    .snb-next{align-items:flex-end}
+    .snb-label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.16em;text-transform:uppercase}
+    .snb-title{font-family:'DM Serif Display',serif;font-size:0.98rem;color:var(--text);transition:color 0.2s;line-height:1.3}
+    .snb-prev:hover .snb-title,.snb-next:hover .snb-title{color:var(--accent)}
+    .snb-center{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:color 0.2s}
+    .snb-center:hover{color:var(--accent)}
+
+    /* FOOTER */
+    footer{background:var(--bg);border-top:1px solid var(--border);padding:1.6rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.06em}
+    .foot-links{display:flex;gap:2rem}
+    .foot-links a{color:var(--muted);text-decoration:none;transition:color 0.2s}
+    .foot-links a:hover{color:var(--accent)}
+
+    /* TAGS */
+    .inline-tags{display:flex;flex-wrap:wrap;gap:0.35rem;margin:1.5rem 0}
+    .tag{font-family:'DM Mono',monospace;font-size:0.6rem;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(56,189,248,0.07);color:var(--accent);border:1px solid rgba(56,189,248,0.14);letter-spacing:0.05em}
+
+    /* REVEAL */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .reveal-d1{transition-delay:0.1s}
+    .reveal-d2{transition-delay:0.2s}
+
+    @media(max-width:680px){
+      .story-hero h1{font-size:2.4rem}
+      .story-meta{gap:1.2rem}
+      .story-nav-bottom{flex-direction:column;text-align:center}
+      .snb-prev,.snb-next{align-items:center}
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">ST // Research</a>
+  <ul class="nav-links">
+    <li><a href="index.html#results">Results</a></li>
+    <li><a href="index.html#simulations">Simulations</a></li>
+    <li><a href="index.html#supporting">More Work</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="story-hero">
+  <div class="story-hero-grid"></div>
+  <div class="story-hero-orb"></div>
+  <div class="story-hero-inner">
+    <a href="index.html#results" class="story-back">Back to Portfolio</a>
+    <div class="story-eyebrow">Project I &mdash; Research Story</div>
+    <h1>Reconstructing <em>Light</em>:<br>Numerical Geodesics in<br>Schwarzschild Spacetime</h1>
+    <p class="story-hero-sub">A first-principles computational study of photon trajectories in strong gravitational fields — from Newtonian baseline to relativistic verification of the photon sphere at r&nbsp;=&nbsp;1.5R<sub>s</sub>.</p>
+    <div class="story-meta">
+      <div class="meta-item"><span class="meta-label">Domain</span><span class="meta-val">Computational General Relativity</span></div>
+      <div class="meta-item"><span class="meta-label">Started</span><span class="meta-val">July 2023</span></div>
+      <div class="meta-item"><span class="meta-label">Key Result</span><span class="meta-val">ε = 6.7 × 10⁻⁴</span></div>
+      <div class="meta-item"><span class="meta-label">Tools</span><span class="meta-val">Python · NumPy · RK4</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ARTICLE -->
+<div class="article-wrap">
+<div class="article-body">
+
+  <!-- SECTION 1 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 01</div>
+    <h2>The Intellectual Trigger</h2>
+    <p>I had encountered the photon sphere in a textbook — the claim that photons orbit a Schwarzschild black hole at exactly <em>r = 1.5R<sub>s</sub></em>. The derivation was there, clean and compact, produced by setting the derivative of the effective potential to zero. I could follow each line. But I had never seen that result emerge from a numerical simulation. The equation produced the answer analytically, but I did not know whether a differential equation solver, operating step-by-step through curved spacetime, would recover the same orbit.</p>
+    <p>That gap bothered me. There is a difference between an equation predicting a result and a simulation converging to it. Analytic solutions are exact by construction. Numerical integration accumulates error at every step. I wanted to know whether the photon sphere at <em>r = 1.5R<sub>s</sub></em> was stable under computation — whether RK4, running on a machine, would find the same number that the pen-and-paper calculation did.</p>
+    <p>More precisely: I wanted to know what happened to photon trajectories on either side of the critical impact parameter. The textbook said they diverge — capture versus escape. But I had never observed that bifurcation numerically, never seen the trajectory behavior shift from one regime to the other as a single parameter changed by a small amount. That is what I set out to compute.</p>
+    <div class="inline-tags"><span class="tag">Schwarzschild Metric</span><span class="tag">Photon Sphere</span><span class="tag">Numerical Verification</span></div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 2 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 02</div>
+    <h2>First Principles Derivation</h2>
+    <p>I began with the vacuum Einstein field equations, <em>R<sub>μν</sub> = 0</em>, and imposed spherical symmetry and the assumption of a static spacetime. I worked through the metric ansatz, applied the Birkhoff theorem argument without citing it directly, and solved for the two unknown metric functions. The result is the Schwarzschild line element.</p>
+
+    <div class="eq-block">
+      <span class="eq-label">Schwarzschild Metric — Derived from Rμν = 0</span>
+      <div class="eq-main">ds² = −(1 − 2M/r)dt² + (1 − 2M/r)⁻¹dr² + r²dΩ²</div>
+    </div>
+
+    <p>From there, I computed the non-zero Christoffel symbols by hand — twelve of them, each requiring partial differentiation of the metric components and index contraction. This is the step most derivations skip. I did not skip it. Computing them yourself makes clear why the geodesic equations become nonlinear in the strong-field regime: the connection coefficients carry the curvature, and near <em>r = 2M</em> they grow without bound.</p>
+    <p>Restricting to the equatorial plane and introducing conserved quantities — energy E and angular momentum L — I reduced the system to a single radial equation involving an effective potential. Setting the derivative of that potential to zero produced the photon sphere condition. The surprise was not the result itself but the sensitivity: the potential has only one maximum, it is unstable, and the photon sphere sits precisely at its peak. Any perturbation sends the photon either inward to capture or outward to infinity. This is not just a mathematical fact — it determines the observable structure of a black hole shadow.</p>
+
+    <div class="eq-block">
+      <span class="eq-label">Effective Potential &amp; Photon Sphere Condition</span>
+      <div class="eq-main">V_eff(r) = (L²/r²)(1 − 2M/r)</div>
+      <div style="margin-top:0.5rem">dV_eff/dr = 0  ⟹  r_photon = 3GM/c² = 1.5 R_s</div>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 3 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 03</div>
+    <h2>The Technical Failures</h2>
+    <p>The first integrator I implemented was Euler's method. It is simple, instructive, and — near a black hole — completely unreliable.</p>
+
+    <div class="failure-block reveal reveal-d1">
+      <div class="failure-block-head"><span class="failure-tag">Failure 01</span></div>
+      <p><strong>What went wrong:</strong> Near r = 2M, the Christoffel symbols grow rapidly. The Euler method advances the state by a single linear approximation per step — it has no mechanism for correcting the growing error introduced in the previous step. Trajectory coordinates began diverging. Photons that should have been captured curved outward instead. Photons that should have escaped spiraled inward. The simulation produced confident but physically meaningless output.</p>
+      <p><strong>Why it went wrong:</strong> The global error of Euler integration is O(h) — proportional to the step size. In a smooth, slowly varying system, that is manageable. Near the event horizon, the curvature gradients are steep enough that even a small step size allows truncation error to accumulate catastrophically within a few dozen iterations.</p>
+      <p><strong>How I diagnosed it:</strong> I tested the integrator on the known circular orbit at b = b_c. This trajectory should maintain r ≈ 1.5R<sub>s</sub> indefinitely. The Euler result drifted by orders of magnitude within 10 orbital periods. The drift was not random — it was systematic, always outward, which indicated the curvature correction terms were being underestimated.</p>
+      <p><strong>What I changed:</strong> I implemented fourth-order Runge–Kutta, which uses four intermediate evaluations of the derivative per step and achieves O(h⁴) global error. The same circular orbit test now maintained r ≈ 1.5R<sub>s</sub> over 50 full orbital periods with drift less than 10⁻⁶ R<sub>s</sub> per period.</p>
+    </div>
+
+    <div class="failure-block reveal reveal-d1">
+      <div class="failure-block-head"><span class="failure-tag">Failure 02</span></div>
+      <p><strong>What went wrong:</strong> My initial boundary conditions placed the photon too close to the event horizon. The simulation could not distinguish capture from a near-miss. Trajectories that grazed r ≈ 1.01R<sub>s</sub> were sometimes classified as escaped because the integrator stepped over the boundary without triggering the capture criterion.</p>
+      <p><strong>Why it went wrong:</strong> The capture threshold I had set was not tight enough, and I had not implemented adaptive step control near the boundary. The integrator used a fixed step size, allowing it to skip through the critical region between one step and the next.</p>
+      <p><strong>What I changed:</strong> I introduced adaptive step-size reduction in the region r < 1.5R<sub>s</sub>, and tightened the capture criterion to r < 1.01R<sub>s</sub>. With this adjustment, the boundary scan across impact parameters converged correctly, and the photon sphere measurement became stable across three successive resolution levels.</p>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 4 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 04</div>
+    <h2>Conceptual Realization</h2>
+    <p>The result I found most striking was not the photon sphere radius itself but the nature of the transition around it.</p>
+
+    <div class="pull-quote reveal">
+      <p>Photon capture near a black hole is not a gradual process. It is a <em>threshold phenomenon</em> — a discontinuity in trajectory behavior produced by an infinitesimally small change in a single parameter.</p>
+    </div>
+
+    <p>When I scanned impact parameters at fine resolution (Δb = 10⁻⁵ M) near the critical value b<sub>c</sub> = 3√3 M, the closest-approach distance did not decrease smoothly toward the photon sphere as b approached b<sub>c</sub> from above. Instead, there was a sharp discontinuity: trajectories just above b<sub>c</sub> had closest approaches scattered across a wide range, while trajectories just below it were all captured. The histogram of outcomes was bimodal — nearly everything was either fully captured or fully escaped, with almost nothing in between.</p>
+    <p>This is what an unstable equilibrium looks like computationally. The photon sphere is not an attractor. It is a saddle point in trajectory space. Photons that approach it do not settle there — they pass through and diverge in one direction or the other, with the direction determined entirely by which side of b<sub>c</sub> they started on.</p>
+
+    <div class="insight-block reveal">
+      <span class="insight-tag">Conceptual Insight</span>
+      <p>This has a direct observational consequence. The black hole shadow — the dark region visible in Event Horizon Telescope images — has a sharply defined edge precisely because of this bifurcation. The edge is not a gradual dimming. It corresponds to the critical impact parameter, and photons arriving from slightly different angles end up in entirely different fates. The sharpness of the shadow boundary is a signature of the photon sphere's instability, not its stability.</p>
+      <p><strong>Simulation is not illustration here — it is the only way to observe this behavior directly.</strong> The analytic solution tells you where the photon sphere is. It does not show you what the transition looks like.</p>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 5 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 05</div>
+    <h2>Limitations &amp; Intellectual Humility</h2>
+    <p>This project is a verified computational study within a carefully chosen scope. It is not a general relativistic ray tracer, and it does not claim to be.</p>
+
+    <div class="humility-block">
+      <ul class="humility-list">
+        <li>The simulation operates in Schwarzschild spacetime — a non-rotating, spherically symmetric geometry. Real astrophysical black holes rotate. Kerr spacetime introduces additional Christoffel symbols and frame-dragging terms that this simulation does not fully implement. The Kerr extension shown in Phase 5 is preliminary; the Boyer–Lindquist Christoffel symbols were not derived from first principles for that phase.</li>
+        <li>Photon trajectories are restricted to the equatorial plane. A full lensing calculation requires integration over all orbital inclinations and generates an image, not just a trajectory family. The angular deflection field and the resulting shadow image were not computed.</li>
+        <li>The SNR comparison between integrators was performed at a fixed step size. A rigorous convergence study would vary the step size systematically and measure error against an exact analytic solution at each level — this was not done.</li>
+        <li>The simulation treats the spacetime as fixed and vacuum. Accretion disk matter, electromagnetic fields, and quantum corrections near the horizon are outside the scope of this model.</li>
+        <li>There is no formal proof of convergence for the specific ODE system solved here, only empirical verification against the known analytic result.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 6 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 06</div>
+    <h2>Why This Project Changed How I Think</h2>
+    <p>Before this project, I thought of numerical methods as a way to approximate things that could not be solved analytically. I understood that RK4 was more accurate than Euler, and I understood why in terms of Taylor series. But I had not seen, in a concrete system, what it means for an integrator to <em>fail</em> — not just be inaccurate, but produce trajectories that are confidently wrong.</p>
+    <p>The Euler simulation did not produce noisy results. It produced smooth, physically plausible-looking trajectories that were simply incorrect. That is a different kind of problem than approximation error. It means that a simulation can look right while being wrong, and the only way to detect that is to test it against something you already know — in this case, the analytic photon sphere location.</p>
+
+    <div class="pull-quote reveal">
+      <p>Equations are not static truths. When you integrate them step-by-step, they become <em>dynamic systems whose behavior must be observed</em>. The simulation is not a picture of the physics — it is a second experiment.</p>
+    </div>
+
+    <p>This changed how I approach verification. The result ε = 6.7 × 10⁻⁴ is not just a number confirming the implementation. It is evidence that the integrator is tracking the actual geometry of spacetime rather than a numerical artifact of it. Every subsequent project I have done has involved some version of the same test: computing a known result first, before trusting the unknown ones.</p>
+    <p>That habit — of verifying the tool before trusting the output — is the most transferable thing I took from this work.</p>
+  </div>
+
+</div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="story-nav-bottom">
+  <a href="index.html#results" class="snb-prev">
+    <span class="snb-label">← Back</span>
+    <span class="snb-title">Portfolio Overview</span>
+  </a>
+  <a href="index.html#results" class="snb-center">All Projects</a>
+  <a href="ligo_story.html" class="snb-next">
+    <span class="snb-label">Next Project →</span>
+    <span class="snb-title">Extracting Signal from Spacetime Noise</span>
+  </a>
+</div>
+
+<footer>
+  <span>&copy; 2026 Samarth Tripathi &mdash; Computational Research Portfolio</span>
+  <div class="foot-links">
+    <a href="index.html#results">Results</a>
+    <a href="index.html#simulations">Simulations</a>
+    <a href="https://github.com/samarthtripathi12" target="_blank">GitHub</a>
+  </div>
+</footer>
+
+<script>
+  // Reading progress bar
+  window.addEventListener('scroll',function(){
+    var scrollTop=window.scrollY;
+    var docHeight=document.documentElement.scrollHeight-window.innerHeight;
+    var pct=docHeight>0?(scrollTop/docHeight)*100:0;
+    document.getElementById('progressBar').style.width=pct+'%';
+  });
+
+  // Scroll reveal
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}
+    });
+  },{threshold:0.1});
+  document.querySelectorAll('.reveal,.s-block').forEach(function(el){observer.observe(el);});
+</script>
+</body>
+</html>
