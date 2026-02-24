@@ -235,7 +235,7 @@
     <div class="hero-ctas">
       <a href="#results" class="btn btn-primary">↓ View Research</a>
       <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-ghost">⌥ GitHub</a>
-      <a href="mailto:samarth.tripathi.edu@gmail.com" class="btn btn-ghost">✉ Contact</a>
+      <a href="/cdn-cgi/l/email-protection#b8cbd9d5d9caccd096cccad1c8d9ccd0d196dddccdf8dfd5d9d1d496dbd7d5" class="btn btn-ghost">✉ Contact</a>
     </div>
   </div>
 </section>
@@ -388,7 +388,7 @@
       </div>
     </div>
 
-    <!-- SIM 3: NEURAL NET — GIF only, no interactive -->
+    <!-- SIM 3: NEURAL NET + INTERACTIVE -->
     <div class="sc">
       <div class="sc-gif"><img src="assets/neural_5panel.gif" alt="Neural network learning simulation"></div>
       <div class="sc-bar">
@@ -396,14 +396,25 @@
         <span class="sc-bar-desc">Loss curves · Decision boundary · Forward pass · Weight matrix · Gradient magnitude</span>
         <span class="sc-live">● LIVE SIM</span>
       </div>
+      <div class="sim-strip">
+        <div class="sim-strip-l">
+          <div class="sim-strip-icon">⚡</div>
+          <div class="sim-strip-copy">
+            <div class="sim-strip-title">Probability is the Arena — Interactive Simulator</div>
+            <div class="sim-strip-desc">4 Markov chains · live loss landscape · watch uncertainty collapse into convergence</div>
+          </div>
+        </div>
+        <a href="neural-interactive.html" target="_blank" class="ab ab-sim">🔬 Launch Simulator →</a>
+      </div>
       <div class="sc-info">
         <div>
           <h3>Neural Network Learning — 5 Simultaneous Panels</h3>
           <div class="sc-info-sub">2→6→4→1 Architecture · Backpropagation · Probabilistic · Markov-like</div>
           <p>Watch a neural network learn to solve XOR across 500 epochs — built entirely in NumPy with no ML frameworks. Four random seeds trained simultaneously reveal the probabilistic, Markov-chain-like nature of gradient descent: different initializations, different trajectories, same convergence. The forward pass panel shows activation values flowing live through each neuron. The gradient magnitude panel visualizes the backpropagation signal — chain rule made visible.</p>
-          <div class="card-tags"><span class="tag">Backpropagation</span><span class="tag">Chain Rule</span><span class="tag">4 Seeds</span><span class="tag">Stochastic</span><span class="tag">NumPy Only</span></div>
+          <div class="card-tags"><span class="tag">Backpropagation</span><span class="tag">Chain Rule</span><span class="tag">4 Seeds</span><span class="tag">Stochastic</span><span class="tag">NumPy Only</span><span class="tag">Markov Chains</span></div>
         </div>
         <div class="sc-acts">
+          <a href="neural-interactive.html" target="_blank" class="ab ab-sim">⚡ Interactive →</a>
           <button onclick="openModal('pdfs/neuralnet.pdf','Project 03 — Neural Network From Scratch')" class="ab ab-pdf">↗ View PDF</button>
           <a href="pdfs/neuralnet.pdf" download class="ab ab-dl">↓ Download</a>
           <a href="https://github.com/samarthtripathi12/neural_networks_training" target="_blank" class="ab ab-gh">⌥ GitHub</a>
@@ -472,9 +483,9 @@
     <h2>Contact</h2>
     <p>Open to research opportunities, collaborations, and university admissions inquiries.</p>
     <div class="clinks">
-      <a href="mailto:samarth.tripathi.edu@gmail.com" class="clink">
+      <a href="/cdn-cgi/l/email-protection#e49785898596908cca90968d9485908c8dca818091a48389858d88ca878b89" class="clink">
         <div class="clink-icon">✉</div>
-        <span>samarth.tripathi.edu@gmail.com</span>
+        <span><span class="__cf_email__" data-cfemail="2053414d415254480e54524950415448490e45445560474d41494c0e434f4d">[email&#160;protected]</span></span>
       </a>
       <a href="https://github.com/samarthtripathi12" target="_blank" class="clink">
         <div class="clink-icon">⌥</div>
@@ -490,11 +501,11 @@
     <a href="#results">Results</a>
     <a href="#simulations">Simulations</a>
     <a href="https://github.com/samarthtripathi12" target="_blank">GitHub</a>
-    <a href="mailto:samarth.tripathi.edu@gmail.com">Email</a>
+    <a href="/cdn-cgi/l/email-protection#0a796b676b787e62247e78637a6b7e6263246f6e7f4a6d676b636624696567">Email</a>
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   function openModal(path,title){
     const url='https://samarthtripathi12.github.io/'+path;
     document.getElementById('modalFrame').src='https://docs.google.com/viewer?url='+encodeURIComponent(url)+'&embedded=true';
@@ -504,12 +515,3 @@
     document.body.style.overflow='hidden';
   }
   function closeModal(){
-    document.getElementById('modal').classList.remove('on');
-    document.getElementById('modalFrame').src='';
-    document.body.style.overflow='';
-  }
-  document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal()});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()});
-</script>
-</body>
-</html>
