@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project III — Geometry in the Loss Landscape | Samarth Tripathi</title>
+  <meta name="description" content="Neural network from scratch — chain rule to gradient descent, XOR classification, and what the loss landscape reveals about optimization geometry."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#07090f;--surface:#0d1117;--surface2:#111827;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--accent:#38bdf8;--accent2:#818cf8;--gold:#f59e0b;--green:#34d399;--text:#e2e8f0;--muted:#64748b;--card:#0b1120}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");opacity:0.55}
+
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0.95rem 5vw;background:rgba(7,9,15,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:background 0.3s}
+    .nav-logo{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent);letter-spacing:0.12em;text-decoration:none}
+    .nav-links{display:flex;gap:2.5rem;list-style:none}
+    .nav-links a{text-decoration:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.2s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--accent2);transform:scaleX(0);transition:transform 0.25s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-links a:hover::after{transform:scaleX(1)}
+
+    /* HERO — accent shifted to accent2 (indigo) for Neural Net */
+    .story-hero{min-height:62vh;display:flex;align-items:flex-end;padding:9rem 5vw 4.5rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+    .story-hero-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(129,140,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(129,140,248,0.03) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 90% 80% at 20% 0%,black 30%,transparent 100%)}
+    .story-hero-orb{position:absolute;z-index:0;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(129,140,248,0.07) 0%,transparent 65%);top:-240px;right:-100px;pointer-events:none;animation:orbFloat 9s ease-in-out infinite}
+    @keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,-18px)}}
+    .story-hero-inner{position:relative;z-index:2;width:100%;max-width:860px}
+    .story-back{display:inline-flex;align-items:center;gap:0.5rem;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);text-decoration:none;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2.5rem;transition:color 0.2s;animation:fadeUp 0.5s 0.05s ease both}
+    .story-back:hover{color:var(--accent2)}
+    .story-back::before{content:'←';font-size:0.8rem}
+    .story-eyebrow{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent2);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;animation:fadeUp 0.5s 0.1s ease both}
+    .story-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--accent2)}
+    .story-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.6rem,6vw,4.8rem);line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.2rem;animation:fadeUp 0.5s 0.18s ease both}
+    .story-hero h1 em{color:var(--accent2);font-style:italic}
+    .story-hero-sub{font-size:0.9rem;color:#7a8faf;max-width:580px;line-height:1.85;animation:fadeUp 0.5s 0.26s ease both}
+    .story-meta{display:flex;gap:2rem;flex-wrap:wrap;margin-top:2rem;padding-top:1.8rem;border-top:1px solid var(--border);animation:fadeUp 0.5s 0.34s ease both}
+    .meta-item{display:flex;flex-direction:column;gap:0.18rem}
+    .meta-label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.16em;text-transform:uppercase}
+    .meta-val{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent2);letter-spacing:0.05em}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    .progress-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));z-index:300;transition:width 0.1s linear;width:0%}
+
+    .article-wrap{max-width:780px;margin:0 auto;padding:0 5vw}
+    .article-body{padding:5rem 0 7rem}
+
+    .s-block{margin-bottom:4.5rem}
+    .s-number{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent2);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.6rem}
+    .s-number::before{content:'';display:block;width:16px;height:1px;background:var(--accent2)}
+    .s-block h2{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.15;letter-spacing:-0.02em;margin-bottom:1.6rem;color:var(--text)}
+    .s-block p{font-size:0.92rem;color:#8898b8;line-height:1.95;margin-bottom:1.15rem}
+    .s-block p:last-child{margin-bottom:0}
+    .s-block strong{color:#c4d4e8;font-weight:500}
+    .s-block em{color:var(--accent2);font-style:normal}
+
+    .pull-quote{border-left:3px solid var(--accent2);padding:1.2rem 1.6rem;margin:2.2rem 0;background:rgba(129,140,248,0.04);border-radius:0 4px 4px 0}
+    .pull-quote p{font-family:'DM Serif Display',serif;font-size:1.08rem;font-style:italic;color:#b8cce0;line-height:1.65;margin:0}
+    .pull-quote p em{color:var(--accent2);font-style:normal}
+
+    .eq-block{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1.4rem 1.6rem;margin:2rem 0;font-family:'DM Mono',monospace;font-size:0.82rem;color:#a5c0d8;line-height:2;letter-spacing:0.04em;overflow-x:auto}
+    .eq-label{font-size:0.58rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:0.6rem;display:block}
+    .eq-block .eq-main{color:var(--accent2);font-size:0.88rem}
+
+    .failure-block{background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.14);border-radius:4px;padding:1.6rem;margin:2rem 0}
+    .failure-block-head{display:flex;align-items:center;gap:0.6rem;margin-bottom:1rem}
+    .failure-tag{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gold);letter-spacing:0.14em;text-transform:uppercase;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:0.15rem 0.55rem;border-radius:2px}
+    .failure-block p{font-size:0.88rem;color:#8898b8;line-height:1.9;margin-bottom:0.8rem}
+    .failure-block p:last-child{margin-bottom:0}
+    .failure-block strong{color:#e2c97a;font-weight:400}
+
+    .insight-block{background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.18);border-radius:4px;padding:1.6rem;margin:2rem 0}
+    .insight-tag{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--accent2);letter-spacing:0.14em;text-transform:uppercase;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.2);padding:0.15rem 0.55rem;border-radius:2px;display:inline-block;margin-bottom:1rem}
+    .insight-block p{font-size:0.88rem;color:#8898b8;line-height:1.9;margin-bottom:0.8rem}
+    .insight-block p:last-child{margin-bottom:0}
+    .insight-block strong{color:#a5aaee;font-weight:400}
+
+    .humility-block{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.6rem 0;margin:2rem 0}
+    .humility-list{list-style:none;display:flex;flex-direction:column;gap:0.55rem;margin-top:1rem}
+    .humility-list li{display:flex;align-items:flex-start;gap:0.75rem;font-size:0.88rem;color:#7a8faf;line-height:1.7}
+    .humility-list li::before{content:'—';font-family:'DM Mono',monospace;color:var(--muted);flex-shrink:0;margin-top:0.05rem}
+
+    .s-divider-dot{display:flex;align-items:center;justify-content:center;gap:1.2rem;margin:3rem 0;font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.2em}
+    .s-divider-dot::before,.s-divider-dot::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    .inline-tags{display:flex;flex-wrap:wrap;gap:0.35rem;margin:1.5rem 0}
+    .tag{font-family:'DM Mono',monospace;font-size:0.6rem;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(129,140,248,0.07);color:var(--accent2);border:1px solid rgba(129,140,248,0.14);letter-spacing:0.05em}
+
+    .story-nav-bottom{border-top:1px solid var(--border);padding:2.5rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;background:var(--surface)}
+    .snb-prev,.snb-next{display:flex;flex-direction:column;gap:0.25rem;text-decoration:none;transition:color 0.2s;max-width:260px}
+    .snb-prev{align-items:flex-start}
+    .snb-next{align-items:flex-end}
+    .snb-label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:0.16em;text-transform:uppercase}
+    .snb-title{font-family:'DM Serif Display',serif;font-size:0.98rem;color:var(--text);transition:color 0.2s;line-height:1.3}
+    .snb-prev:hover .snb-title,.snb-next:hover .snb-title{color:var(--accent2)}
+    .snb-center{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;transition:color 0.2s}
+    .snb-center:hover{color:var(--accent2)}
+
+    footer{background:var(--bg);border-top:1px solid var(--border);padding:1.6rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.06em}
+    .foot-links{display:flex;gap:2rem}
+    .foot-links a{color:var(--muted);text-decoration:none;transition:color 0.2s}
+    .foot-links a:hover{color:var(--accent2)}
+
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .reveal-d1{transition-delay:0.12s}
+
+    @media(max-width:680px){
+      .story-hero h1{font-size:2.4rem}
+      .story-meta{gap:1.2rem}
+      .story-nav-bottom{flex-direction:column;text-align:center}
+      .snb-prev,.snb-next{align-items:center}
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">ST // Research</a>
+  <ul class="nav-links">
+    <li><a href="index.html#results">Results</a></li>
+    <li><a href="index.html#simulations">Simulations</a></li>
+    <li><a href="index.html#supporting">More Work</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="story-hero">
+  <div class="story-hero-grid"></div>
+  <div class="story-hero-orb"></div>
+  <div class="story-hero-inner">
+    <a href="index.html#results" class="story-back">Back to Portfolio</a>
+    <div class="story-eyebrow">Project III &mdash; Research Story</div>
+    <h1>Geometry in the<br><em>Loss Landscape</em>:<br>Neural Network From Scratch</h1>
+    <p class="story-hero-sub">A first-principles construction of a fully functional neural network using only NumPy — chain rule derivation, backpropagation, gradient descent, and what XOR reveals about the geometry of learning.</p>
+    <div class="story-meta">
+      <div class="meta-item"><span class="meta-label">Domain</span><span class="meta-val">Algorithmic Machine Learning</span></div>
+      <div class="meta-item"><span class="meta-label">Started</span><span class="meta-val">October 2023</span></div>
+      <div class="meta-item"><span class="meta-label">Accuracy</span><span class="meta-val">99.5% — 199/200 correct</span></div>
+      <div class="meta-item"><span class="meta-label">Tools</span><span class="meta-val">Python · NumPy only</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="article-wrap">
+<div class="article-body">
+
+  <!-- SECTION 1 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 01</div>
+    <h2>The Intellectual Trigger</h2>
+    <p>XOR is a four-point classification problem. Two inputs, one output, four examples. It takes about thirty seconds to describe. It is also, famously, not linearly separable — a single-layer network cannot learn it regardless of how long you train it, because no straight line through the input plane can separate the two classes. That result from Minsky and Papert in 1969 is what this project started from.</p>
+    <p>I had read that a hidden layer solves the problem — that adding neurons between the input and output creates a space where the mapping becomes linear even though the original problem is not. I understood this abstractly. What I did not understand was the mechanics of how gradient descent, operating on a loss function defined over all four training examples, would actually find a weight configuration that accomplished this geometric transformation. The proof of existence says such a configuration must exist; it does not say how the network finds it.</p>
+    <p>More specifically, I wanted to know what the loss surface looked like during training — whether the network wandered through parameter space before converging, or whether gradient descent moved consistently toward a basin. And I wanted to know whether different random initializations would find the same solution or different ones. That question about the structure of convergence, not just the fact of it, is what motivated building from scratch rather than using a framework that would abstract away the optimization dynamics.</p>
+    <div class="inline-tags"><span class="tag">Backpropagation</span><span class="tag">Gradient Descent</span><span class="tag">XOR</span><span class="tag">Loss Landscape</span></div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 2 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 02</div>
+    <h2>First Principles Derivation</h2>
+    <p>I began with the chain rule — not the neural network version of it, but the calculus version. For a composite function L(a(z(w))), the derivative of L with respect to w is the product of three local derivatives: dL/da, da/dz, and dz/dw. The entire machinery of backpropagation is an efficient way to compute these local derivatives layer by layer, reusing the same intermediate quantities without recomputing them.</p>
+    <p>Starting from a single output neuron with sigmoid activation and binary cross-entropy loss, I derived the weight gradient from first principles:</p>
+
+    <div class="eq-block">
+      <span class="eq-label">Binary Cross-Entropy Loss</span>
+      <div class="eq-main">L = −[y log(a) + (1−y) log(1−a)]</div>
+      <div style="margin-top:0.6rem;color:#7a8faf;font-size:0.78rem">Output error: δ = ∂L/∂z = a − y  &nbsp;&nbsp; (sigmoid + BCE combined)</div>
+      <div style="margin-top:0.4rem;color:#7a8faf;font-size:0.78rem">Weight gradient: ∂L/∂w_i = (a − y) · x_i</div>
+    </div>
+
+    <p>The surprise in this derivation is the simplification. The derivative of sigmoid is σ(z)(1−σ(z)), and the derivative of binary cross-entropy with respect to the pre-activation is exactly a−y — the two factors cancel cleanly. This is not a coincidence: the sigmoid and binary cross-entropy are conjugate functions in the sense that their composition produces a clean gradient. Had I used a different loss function, the gradient would have been more complex. Working through the derivation yourself makes this pairing feel necessary rather than arbitrary.</p>
+    <p>For the hidden layer, I propagated the error backward through the weight matrix and applied the ReLU derivative — a step function that is 1 where the neuron was active and 0 where it was not. This is the local gradient that vanishes for dead neurons, the mechanism behind the dying ReLU problem.</p>
+
+    <div class="eq-block">
+      <span class="eq-label">Weight Update — Gradient Descent</span>
+      <div class="eq-main">W_i ← W_i − η · (a − y) · x_i</div>
+      <div style="margin-top:0.5rem;color:#7a8faf;font-size:0.78rem">b ← b − η · (a − y)</div>
+      <div style="margin-top:0.5rem;color:#7a8faf;font-size:0.78rem">Hidden layer: δ⁽²⁾ = (W⁽ᴸ⁺¹⁾)ᵀ δ⁽ᴸ⁺¹⁾ ⊙ σ′(Z⁽²⁾)</div>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 3 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 03</div>
+    <h2>The Technical Failures</h2>
+
+    <div class="failure-block reveal reveal-d1">
+      <div class="failure-block-head"><span class="failure-tag">Failure 01 — Vanishing Gradients from Poor Initialization</span></div>
+      <p><strong>What went wrong:</strong> My first weight initialization used a standard normal distribution — weights drawn from N(0, 1). The network failed to learn on the XOR problem. After 500 epochs, the loss had barely decreased and the decision boundary showed no meaningful structure.</p>
+      <p><strong>Why it went wrong:</strong> Large initial weights push the sigmoid activation into its saturation regions — where the output is close to 0 or 1 and the derivative is close to 0. When the activation is saturated, the local gradient dσ/dz ≈ 0, so the backpropagated error signal shrinks to nearly zero before reaching the first layer. The weights barely move. This is vanishing gradient through saturation, caused by poor initialization.</p>
+      <p><strong>How I diagnosed it:</strong> I printed the gradient magnitudes at each layer after the first few epochs. The gradients at the hidden layer were four orders of magnitude smaller than the gradients at the output layer. The loss curve was flat because the hidden layer was effectively frozen — the output layer was adjusting slightly but had nothing useful to work with.</p>
+      <p><strong>What I changed:</strong> I scaled the initialization to N(0, 0.01²) — small weights keep the pre-activations near zero, where the sigmoid gradient is at its maximum. The network began learning immediately. Loss decreased from the first epoch and converged to a stable minimum within 500 epochs.</p>
+    </div>
+
+    <div class="failure-block reveal reveal-d1">
+      <div class="failure-block-head"><span class="failure-tag">Failure 02 — Learning Rate Sensitivity</span></div>
+      <p><strong>What went wrong:</strong> With η = 1.0, the loss oscillated rather than converging. The training curve showed regular spikes — large drops followed by sudden increases — rather than a smooth descent.</p>
+      <p><strong>Why it went wrong:</strong> The learning rate was too large relative to the curvature of the loss surface. Full-batch gradient descent takes a step proportional to the gradient, then recomputes the gradient from the new position. If the step is large enough to overshoot the local minimum in any direction, the loss increases. In a high-curvature region, this can cause persistent oscillation.</p>
+      <p><strong>How I diagnosed it:</strong> I plotted the loss at every epoch for three different learning rates: η ∈ {0.01, 0.1, 1.0}. The pattern was clear — lower learning rates showed smooth monotonic descent, the highest showed oscillation, and η = 0.1 was the fastest stable convergence.</p>
+      <p><strong>What I changed:</strong> I fixed η = 0.1 and verified that loss decreased monotonically to below 0.01 within 500 epochs. I also noted that even η = 0.01 eventually converged to the same final accuracy — just more slowly — which suggested the loss surface did not have many poor local minima in this problem.</p>
+    </div>
+
+    <div class="failure-block reveal reveal-d1">
+      <div class="failure-block-head"><span class="failure-tag">Failure 03 — Matrix Dimension Misalignment in Backpropagation</span></div>
+      <p><strong>What went wrong:</strong> My backpropagation produced a gradient matrix with the wrong shape on the first attempt. NumPy did not raise an error — it silently broadcast the arrays instead, producing a weight update of the correct shape but incorrect values.</p>
+      <p><strong>Why it went wrong:</strong> The gradient of the loss with respect to a weight matrix W is an outer product: δ · aᵀ, where δ is the error vector and a is the activation from the previous layer. I had the transpose wrong, computing aᵀ · δ instead. NumPy's broadcasting rules allowed this to execute without complaint, producing a scalar or incorrectly shaped result that was then broadcast back to the weight matrix shape.</p>
+      <p><strong>How I diagnosed it:</strong> I manually computed the gradient for a single training example with known values and compared the result against the NumPy output. The magnitudes did not match. Tracing through the matrix operations, I found the transposition error by checking dimensions explicitly at each step.</p>
+      <p><strong>What I changed:</strong> I added explicit shape assertions after every matrix operation in the backpropagation pass. This made dimension errors immediately visible rather than silently propagated. The correct gradient formulation is dW = (1/m) · δ · A_prev.T, where A_prev.T has the correct orientation to produce a matrix of the same shape as W.</p>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 4 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 04</div>
+    <h2>Conceptual Realization</h2>
+    <p>The observation that shaped this project most was about convergence across different initializations.</p>
+
+    <div class="pull-quote reveal">
+      <p>Different random initializations converged to the same final accuracy. But they did not converge to the <em>same weights</em>. The loss landscape has many minima that all solve the problem equally well — but they are geometrically distinct solutions.</p>
+    </div>
+
+    <p>I ran the training five times with different random seeds and plotted the final decision boundaries. They were all correct — the XOR pattern was learned in each case. But the boundaries were different: some were oriented diagonally left-to-right, some right-to-left, some with curved transitions, some with sharp ones. The network found multiple geometrically distinct separations of the same four points, all achieving the same loss.</p>
+    <p>This suggests something about the loss landscape that is more interesting than the convergence result. For this problem, the basin of attraction around any good solution appears to be large relative to the random initialization region — gradient descent does not need to start close to a particular solution to find one. The loss landscape has many entrances, all leading to equally valid answers.</p>
+
+    <div class="insight-block reveal">
+      <span class="insight-tag">Conceptual Insight</span>
+      <p>This is not the same as saying the landscape has no structure. The fact that all initializations converged to approximately the same loss value, despite finding different weight configurations, means there is a level set of low-loss solutions rather than a single global minimum. The network is not finding a point — it is finding a region, and gradient descent can enter that region from many starting positions.</p>
+      <p><strong>For the XOR problem specifically, this makes sense geometrically: there are infinitely many hyperplanes in the hidden-layer activation space that can linearly separate the transformed inputs.</strong> The network is selecting one of them based on where it started. The loss does not distinguish between them because all of them solve the classification task equally well. That is a property of the problem, not just of the optimizer.</p>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 5 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 05</div>
+    <h2>Limitations &amp; Intellectual Humility</h2>
+    <p>The results of this project are accurate and reproducible within their defined scope. That scope is deliberately narrow.</p>
+
+    <div class="humility-block">
+      <ul class="humility-list">
+        <li>The dataset is synthetic and deterministic. The XOR problem has no noise — every input maps to exactly one correct output with no ambiguity. Real classification problems have irreducible label noise, class overlap, and distributional shift. A network that achieves 99.5% on clean XOR is not a model of anything that generalizes this result to noisy settings.</li>
+        <li>The architecture is fixed at one hidden layer with four neurons. Deeper networks, skip connections, attention mechanisms, and convolutional structures are outside the scope of this implementation. The project demonstrates that backpropagation works; it does not explore why deep architectures generalize better than shallow ones.</li>
+        <li>No regularization is applied — no L2 weight decay, no dropout, no batch normalization. On a 200-sample synthetic dataset this does not matter, but the absence of regularization means the implementation cannot be directly extended to a regime where overfitting is a risk.</li>
+        <li>The optimizer is vanilla full-batch gradient descent — no momentum, no adaptive learning rates, no weight decay scheduling. Modern optimizers (Adam, AdaGrad, RMSProp) have substantially better convergence properties on non-convex loss surfaces. This project does not explore those differences.</li>
+        <li>There is no formal proof of convergence for gradient descent on the binary cross-entropy loss with a ReLU hidden layer. The empirical result shows convergence; the theoretical guarantee for non-convex problems is more nuanced than what this project addresses.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-divider-dot reveal">· · ·</div>
+
+  <!-- SECTION 6 -->
+  <div class="s-block reveal">
+    <div class="s-number">Section 06</div>
+    <h2>Why This Project Changed How I Think</h2>
+    <p>Before this project, I understood backpropagation as an algorithm. After it, I understood backpropagation as a geometric process — a way of moving through a high-dimensional parameter space in the direction that reduces a scalar-valued loss function most efficiently given only local information.</p>
+    <p>The local information constraint is what makes this interesting. Gradient descent at any point in parameter space can only see the slope at that point, not the shape of the landscape globally. It does not know whether it is near a global minimum, a local minimum, a saddle point, or an extended flat region. It moves downhill by definition, but downhill locally and downhill globally are different things. The fact that this works at all on nonlinear problems — that following local gradient information reliably leads to good solutions — is not obvious from the algorithm's definition.</p>
+
+    <div class="pull-quote reveal">
+      <p>What gradient descent is doing is not optimization in the classical sense. It is a form of <em>local geometry exploration</em> — sampling the curvature of the loss landscape one point at a time, building up a trajectory that happens to reach low-loss regions.</p>
+    </div>
+
+    <p>That reframing — optimization as geometry exploration rather than search — changed how I think about every supervised learning result I encounter. When a neural network generalizes well, it is not because it found the correct answer in some abstract sense. It is because the loss landscape, shaped by the training data and the architecture, has a geometry that makes gradient descent likely to find solutions that also work on unseen inputs. Understanding that geometry — why it has the shape it does, and what changes it — is the open problem that this project made concrete for me.</p>
+  </div>
+
+</div>
+</div>
+
+<div class="story-nav-bottom">
+  <a href="ligo_story.html" class="snb-prev">
+    <span class="snb-label">← Previous Project</span>
+    <span class="snb-title">Extracting Signal from Spacetime Noise</span>
+  </a>
+  <a href="index.html#results" class="snb-center">All Projects</a>
+  <a href="index.html" class="snb-next">
+    <span class="snb-label">Return →</span>
+    <span class="snb-title">Back to Portfolio Home</span>
+  </a>
+</div>
+
+<footer>
+  <span>&copy; 2026 Samarth Tripathi &mdash; Computational Research Portfolio</span>
+  <div class="foot-links">
+    <a href="index.html#results">Results</a>
+    <a href="index.html#simulations">Simulations</a>
+    <a href="https://github.com/samarthtripathi12" target="_blank">GitHub</a>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('scroll',function(){
+    var scrollTop=window.scrollY;
+    var docHeight=document.documentElement.scrollHeight-window.innerHeight;
+    var pct=docHeight>0?(scrollTop/docHeight)*100:0;
+    document.getElementById('progressBar').style.width=pct+'%';
+  });
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});
+  },{threshold:0.1});
+  document.querySelectorAll('.reveal,.s-block').forEach(function(el){observer.observe(el);});
+</script>
+</body>
+</html>
