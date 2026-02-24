@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Samarth Tripathi — Computational Research Portfolio</title>
+  <meta name="description" content="Independent computational physicist. Black holes, gravitational waves, neural networks — built from first principles."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#07090f;--surface:#0d1117;--surface2:#111827;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);--accent:#38bdf8;--accent2:#818cf8;--gold:#f59e0b;--green:#34d399;--text:#e2e8f0;--muted:#64748b;--card:#0b1120}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");opacity:0.55}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:0.95rem 5vw;background:rgba(7,9,15,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:background 0.3s}
+    .nav-logo{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--accent);letter-spacing:0.12em;text-decoration:none}
+    .nav-links{display:flex;gap:2.5rem;list-style:none}
+    .nav-links a{text-decoration:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;transition:color 0.2s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--accent);transform:scaleX(0);transition:transform 0.25s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-links a:hover::after{transform:scaleX(1)}
+    .nav-burger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+    .nav-burger span{display:block;width:22px;height:1.5px;background:var(--muted);transition:all 0.3s}
+    .nav-burger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+    .nav-burger.open span:nth-child(2){opacity:0}
+    .nav-burger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+    .mobile-menu{display:none;position:fixed;inset:0;top:57px;z-index:190;background:rgba(7,9,15,0.98);backdrop-filter:blur(24px);flex-direction:column;align-items:center;justify-content:center;gap:2.5rem}
+    .mobile-menu.open{display:flex}
+    .mobile-menu a{font-family:'DM Mono',monospace;font-size:1.1rem;color:var(--muted);text-decoration:none;letter-spacing:0.18em;text-transform:uppercase;transition:color 0.2s}
+    .mobile-menu a:hover{color:var(--accent)}
+
+    /* HERO */
+    #hero{min-height:100vh;display:flex;align-items:center;padding:7rem 5vw 5rem;position:relative;overflow:hidden}
+    .hero-bg-gif{position:absolute;inset:0;z-index:0}
+    .hero-bg-gif img{width:100%;height:100%;object-fit:cover;opacity:0.08;filter:blur(3px) saturate(1.3)}
+    .hero-bg-gif::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(7,9,15,0.97) 0%,rgba(7,9,15,0.85) 50%,rgba(7,9,15,0.97) 100%)}
+    .hero-bg-grid{position:absolute;inset:0;z-index:1;background-image:linear-gradient(rgba(56,189,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.03) 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 80% 70% at 50% 0%,black 40%,transparent 100%)}
+    .hero-orb-1{position:absolute;z-index:1;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.09) 0%,transparent 65%);top:-280px;right:-180px;pointer-events:none;animation:orbFloat 8s ease-in-out infinite}
+    .hero-orb-2{position:absolute;z-index:1;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(129,140,248,0.07) 0%,transparent 65%);bottom:-200px;left:-120px;pointer-events:none;animation:orbFloat 10s ease-in-out infinite reverse}
+    @keyframes orbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
+    .hero-inner{position:relative;z-index:2;width:100%;max-width:1000px;margin:0 auto}
+    .hero-eyebrow{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--accent);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem;animation:fadeUp 0.6s 0.1s ease both}
+    .hero-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--accent)}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(3.8rem,8vw,7rem);line-height:1.0;letter-spacing:-0.03em;margin-bottom:1.2rem;animation:fadeUp 0.6s 0.2s ease both}
+    h1 em{color:var(--accent);font-style:italic}
+    .hero-tag{font-family:'DM Mono',monospace;font-size:0.82rem;color:var(--accent2);letter-spacing:0.05em;margin-bottom:2rem;font-style:italic;animation:fadeUp 0.6s 0.3s ease both}
+    .hero-bio{font-size:0.93rem;color:#8898b8;max-width:640px;line-height:1.95;margin-bottom:2.2rem;animation:fadeUp 0.6s 0.38s ease both;border-left:2px solid rgba(56,189,248,0.22);padding-left:1.4rem}
+    .hero-bio strong{color:var(--accent);font-weight:400}
+    .bio-long{display:none;margin-top:1rem}
+    .bio-long.visible{display:block}
+    .bio-toggle{background:none;border:none;color:var(--accent);font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;cursor:pointer;margin-top:0.8rem;display:flex;align-items:center;gap:0.4rem;padding:0;text-transform:uppercase;transition:opacity 0.2s}
+    .bio-toggle:hover{opacity:0.7}
+    .hero-ctas{display:flex;gap:0.75rem;flex-wrap:wrap;animation:fadeUp 0.6s 0.46s ease both}
+    .btn{display:inline-flex;align-items:center;gap:0.45rem;padding:0.65rem 1.35rem;border-radius:3px;font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;transition:all 0.25s;cursor:pointer;border:none;font-weight:400}
+    .btn-primary{background:var(--accent);color:#020d14}
+    .btn-primary:hover{background:#7dd3fc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(56,189,248,0.25)}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+    .hero-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:0.5rem;animation:fadeUp 0.6s 0.9s ease both}
+    .hero-scroll span{font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--muted);letter-spacing:0.2em;text-transform:uppercase}
+    .scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--accent),transparent);animation:scrollPulse 2s ease-in-out infinite}
+    @keyframes scrollPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .stat{padding:2.2rem 1rem;text-align:center;border-right:1px solid var(--border);transition:background 0.3s}
+    .stat:last-child{border-right:none}
+    .stat:hover{background:rgba(56,189,248,0.03)}
+    .stat-n{font-family:'DM Serif Display',serif;font-size:2.5rem;color:var(--accent);display:block;line-height:1;margin-bottom:0.35rem}
+    .stat-l{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase}
+
+    /* NARRATIVE BRIDGE */
+    .narrative-bridge{padding:4rem 5vw;background:linear-gradient(to bottom,var(--surface),var(--bg));border-bottom:1px solid var(--border)}
+    .nb-inner{max-width:760px;margin:0 auto;text-align:center}
+    .nb-tag{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--accent2);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:1.2rem;opacity:0.7}
+    .nb-text{font-family:'DM Serif Display',serif;font-size:clamp(1.1rem,2.2vw,1.5rem);font-style:italic;color:#b0bdd0;line-height:1.65;letter-spacing:-0.01em}
+    .nb-text em{color:var(--accent);font-style:normal}
+
+    /* SECTIONS */
+    section{padding:5.5rem 5vw}
+    .wrap{max-width:1160px;margin:0 auto}
+    .sec-head{margin-bottom:3rem}
+    .sec-tag{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:0.6rem;display:flex;align-items:center;gap:0.6rem}
+    .sec-tag::before{content:'';display:block;width:18px;height:1px;background:var(--accent)}
+    h2{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);line-height:1.15;letter-spacing:-0.02em}
+    .sec-sub{margin-top:0.6rem;color:var(--muted);font-size:0.88rem;max-width:540px;line-height:1.7}
+    .hr{width:100%;height:1px;background:var(--border)}
+
+    /* SECTION TRANSITIONS */
+    .sec-transition{padding:2rem 5vw;text-align:center}
+    .sec-transition p{font-family:'DM Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:1rem}
+    .sec-transition p::before,.sec-transition p::after{content:'';flex:1;max-width:140px;height:1px;background:var(--border)}
+
+    /* CARDS */
+    .card-tags{display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:1.2rem}
+    .tag{font-family:'DM Mono',monospace;font-size:0.6rem;padding:0.15rem 0.5rem;border-radius:2px;background:rgba(56,189,248,0.07);color:var(--accent);border:1px solid rgba(56,189,248,0.14);letter-spacing:0.05em}
+    .acts{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:auto}
+    .ab{display:inline-flex;align-items:center;gap:0.3rem;padding:0.45rem 0.85rem;border-radius:2px;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;text-decoration:none;transition:all 0.22s;cursor:pointer;border:none}
+    .ab-pdf{background:rgba(245,158,11,0.09);color:var(--gold);border:1px solid rgba(245,158,11,0.2)}
+    .ab-pdf:hover{background:rgba(245,158,11,0.18);transform:translateY(-1px)}
+    .ab-dl{background:rgba(56,189,248,0.07);color:var(--accent);border:1px solid rgba(56,189,248,0.18)}
+    .ab-dl:hover{background:rgba(56,189,248,0.15);transform:translateY(-1px)}
+    .ab-gh{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}
+    .ab-gh:hover{border-color:var(--border2);color:var(--text);transform:translateY(-1px)}
+    .ab-sim{background:rgba(129,140,248,0.1);color:var(--accent2);border:1px solid rgba(129,140,248,0.25)}
+    .ab-sim:hover{background:rgba(129,140,248,0.2);transform:translateY(-1px)}
+
+    /* RESULTS */
+    #results{background:var(--surface)}
+    .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    .rc{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:1.6rem;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s}
+    .rc:hover{border-color:rgba(56,189,248,0.3);transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,0.4)}
+    .rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    .rc-thumb{width:100%;height:150px;border-radius:3px;border:1px solid var(--border);margin-bottom:1.2rem;overflow:hidden;background:#050d1a;flex-shrink:0}
+    .rc-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s}
+    .rc:hover .rc-thumb img{transform:scale(1.04)}
+    .rc-num{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.14em;margin-bottom:0.4rem;opacity:0.6}
+    .rc h3{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:0.2rem;line-height:1.25}
+    .rc-sub{font-size:0.68rem;color:var(--accent2);font-family:'DM Mono',monospace;margin-bottom:0.8rem;letter-spacing:0.05em}
+    .rc p{font-size:0.83rem;color:#7a8faf;line-height:1.72;flex:1;margin-bottom:1rem}
+
+    /* SIMULATIONS */
+    #simulations{background:var(--bg)}
+    .sc{background:var(--card);border:1px solid var(--border);border-radius:6px;overflow:hidden;position:relative;transition:border-color 0.3s,box-shadow 0.3s;margin-bottom:2rem}
+    .sc:last-child{margin-bottom:0}
+    .sc:hover{border-color:rgba(56,189,248,0.3);box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+    .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--gold));z-index:2}
+    .sc-gif{width:100%;height:480px;overflow:hidden;background:#020408}
+    .sc-gif img{width:100%;height:100%;object-fit:contain;display:block;background:#020408}
+    .sc-bar{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 1.6rem;background:rgba(56,189,248,0.025);border-top:1px solid var(--border);flex-wrap:wrap;gap:0.5rem}
+    .sc-bar-tag{font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase}
+    .sc-bar-desc{font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace}
+    .sc-live{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--green);border:1px solid rgba(52,211,153,0.3);border-radius:2px;padding:0.1rem 0.45rem;background:rgba(52,211,153,0.06);animation:blink 2s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+    .sim-strip{display:flex;align-items:center;justify-content:space-between;padding:0.85rem 1.6rem;background:rgba(129,140,248,0.055);border-top:1px solid rgba(129,140,248,0.14);border-bottom:1px solid rgba(129,140,248,0.07);flex-wrap:wrap;gap:0.75rem}
+    .sim-strip-l{display:flex;align-items:center;gap:0.85rem}
+    .sim-strip-icon{width:32px;height:32px;border-radius:50%;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.25);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
+    .sim-strip-copy{display:flex;flex-direction:column;gap:0.1rem}
+    .sim-strip-title{font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--accent2);letter-spacing:0.12em;text-transform:uppercase}
+    .sim-strip-desc{font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace}
+    .sc-info{display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:start;padding:1.6rem 1.8rem}
+    .sc-info h3{font-family:'DM Serif Display',serif;font-size:1.38rem;margin-bottom:0.2rem}
+    .sc-info-sub{font-size:0.7rem;color:var(--accent2);font-family:'DM Mono',monospace;margin-bottom:0.8rem;letter-spacing:0.05em}
+    .sc-info p{font-size:0.88rem;color:#7a8faf;line-height:1.78;margin-bottom:1rem}
+    .sc-acts{display:flex;flex-direction:column;gap:0.5rem;align-items:flex-end;min-width:180px}
+    .sc-audio{padding:0 1.8rem 1.4rem}
+    .sc-audio-label{font-family:'DM Mono',monospace;font-size:0.67rem;color:var(--green);letter-spacing:0.06em;margin-bottom:0.4rem}
+    .sc-audio-sub{font-size:0.6rem;color:#374151;font-family:'DM Mono',monospace;margin-top:0.3rem}
+    audio{width:100%;height:28px;filter:invert(0.85) hue-rotate(175deg) brightness(0.9);border-radius:2px}
+
+    /* THESIS */
+    .thesis-section{background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5.5rem 5vw;position:relative;overflow:hidden}
+    .thesis-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.05) 0%,transparent 65%);pointer-events:none}
+    .thesis-inner{max-width:820px;margin:0 auto;text-align:center;position:relative;z-index:1}
+    .thesis-label{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--accent);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:1.8rem;opacity:0.7}
+    .thesis-quote{font-family:'DM Serif Display',serif;font-size:clamp(1.4rem,3vw,2.2rem);font-style:italic;color:var(--text);line-height:1.5;letter-spacing:-0.01em;margin-bottom:1.6rem}
+    .thesis-quote em{color:var(--accent);font-style:normal}
+    .thesis-attr{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase}
+
+    /* SUPPORTING */
+    #supporting{background:var(--surface)}
+    .sup-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.9rem}
+    .spc{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1.3rem 1.4rem;display:flex;flex-direction:column;transition:border-color 0.25s,transform 0.25s,box-shadow 0.25s;position:relative;overflow:hidden}
+    .spc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent2),transparent);opacity:0;transition:opacity 0.25s}
+    .spc:hover{border-color:rgba(129,140,248,0.28);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.35)}
+    .spc:hover::after{opacity:1}
+    .spc:last-child{grid-column:1/-1}
+    .spc-num{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent2);letter-spacing:0.1em;margin-bottom:0.5rem;opacity:0.65}
+    .spc h3{font-size:0.94rem;font-weight:500;margin-bottom:0.4rem;line-height:1.3}
+    .spc p{font-size:0.8rem;color:var(--muted);line-height:1.65;flex:1;margin-bottom:0.8rem}
+    .spc-gh{display:inline-flex;align-items:center;gap:0.35rem;font-size:0.67rem;color:var(--accent2);text-decoration:none;font-family:'DM Mono',monospace;transition:color 0.2s}
+    .spc-gh:hover{color:#a5b4fc}
+
+    /* CONTACT */
+    #contact{background:var(--bg);padding:5.5rem 5vw 6.5rem}
+    .contact-c{max-width:660px;margin:0 auto;text-align:center}
+    .contact-c h2{margin-bottom:1rem}
+    .contact-lead{color:var(--muted);margin-bottom:0.7rem;font-size:0.92rem;line-height:1.8}
+    .contact-sub{color:#3d5068;font-size:0.78rem;font-family:'DM Mono',monospace;letter-spacing:0.06em;margin-bottom:2.8rem;text-transform:uppercase}
+    .clinks{display:flex;justify-content:center;gap:1.25rem;flex-wrap:wrap}
+    .clink{display:flex;flex-direction:column;align-items:center;gap:0.45rem;text-decoration:none;color:var(--text);transition:color 0.25s,transform 0.25s}
+    .clink:hover{color:var(--accent);transform:translateY(-3px)}
+    .clink-icon{width:52px;height:52px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:var(--surface2);transition:border-color 0.25s,box-shadow 0.25s}
+    .clink:hover .clink-icon{border-color:var(--accent);box-shadow:0 0 20px rgba(56,189,248,0.15)}
+    .clink span{font-size:0.68rem;color:var(--muted);font-family:'DM Mono',monospace;transition:color 0.25s}
+    .clink:hover span{color:var(--accent)}
+
+    /* FOOTER */
+    footer{background:var(--bg);border-top:1px solid var(--border);padding:1.6rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:0.06em}
+    .foot-links{display:flex;gap:2rem}
+    .foot-links a{color:var(--muted);text-decoration:none;transition:color 0.2s}
+    .foot-links a:hover{color:var(--accent)}
+
+    /* MODAL */
+    .modal-bg{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);align-items:center;justify-content:center}
+    .modal-bg.on{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:6px;width:92vw;max-width:940px;height:90vh;display:flex;flex-direction:column;overflow:hidden}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;padding:0.9rem 1.4rem;border-bottom:1px solid var(--border);flex-shrink:0;gap:1rem}
+    .modal-title{font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent);letter-spacing:0.08em}
+    .modal-acts{display:flex;gap:0.65rem;align-items:center}
+    .modal-dl{display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.8rem;border-radius:2px;font-size:0.68rem;text-decoration:none;background:rgba(245,158,11,0.1);color:var(--gold);border:1px solid rgba(245,158,11,0.22);font-family:'DM Mono',monospace;transition:background 0.2s}
+    .modal-dl:hover{background:rgba(245,158,11,0.2)}
+    .modal-x{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);border-radius:2px;width:28px;height:28px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:color 0.2s}
+    .modal-x:hover{color:var(--text)}
+    .modal iframe{flex:1;width:100%;border:none}
+
+    /* SCROLL REVEAL */
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .reveal-d1{transition-delay:0.1s}
+    .reveal-d2{transition-delay:0.2s}
+    .reveal-d3{transition-delay:0.3s}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    /* RESPONSIVE */
+    @media(max-width:1024px){
+      .results-grid{grid-template-columns:1fr}
+      .sc-gif{height:300px}
+      .sc-info{grid-template-columns:1fr}
+      .sc-acts{align-items:flex-start;flex-direction:row;flex-wrap:wrap}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .stat:nth-child(2){border-right:none}
+      .stat:nth-child(3){border-top:1px solid var(--border)}
+    }
+    @media(max-width:768px){
+      nav{padding:0.9rem 4vw}
+      .nav-links{display:none}
+      .nav-burger{display:flex}
+      .sup-grid{grid-template-columns:1fr}
+      .spc:last-child{grid-column:1}
+      h1{font-size:clamp(3rem,12vw,5rem)}
+    }
+    @media(max-width:480px){
+      .sc-gif{height:220px}
+      footer{flex-direction:column;text-align:center}
+      .foot-links{justify-content:center;flex-wrap:wrap;gap:1.2rem}
+      .hero-ctas{flex-direction:column}
+      .btn{justify-content:center}
+    }
+  </style>
+</head>
+<body>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">Research Paper</span>
+      <div class="modal-acts">
+        <a href="#" class="modal-dl" id="modalDl" download>&#8595; Download PDF</a>
+        <button class="modal-x" onclick="closeModal()">&#x2715;</button>
+      </div>
+    </div>
+    <iframe id="modalFrame" src="" title="PDF Viewer"></iframe>
+  </div>
+</div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#results" onclick="closeMobile()">Results</a>
+  <a href="#simulations" onclick="closeMobile()">Simulations</a>
+  <a href="#supporting" onclick="closeMobile()">More Work</a>
+  <a href="#contact" onclick="closeMobile()">Contact</a>
+</div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#hero" class="nav-logo">ST // Research</a>
+  <ul class="nav-links">
+    <li><a href="#results">Results</a></li>
+    <li><a href="#simulations">Simulations</a></li>
+    <li><a href="#supporting">More Work</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-burger" id="burger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ═══════════════════ HOOK ═══════════════════ -->
+<section id="hero">
+  <div class="hero-bg-gif">
+    <img src="assets/blackhole_5panel.gif" alt="Black hole simulation — spacetime warping in real time">
+  </div>
+  <div class="hero-bg-grid"></div>
+  <div class="hero-orb-1"></div>
+  <div class="hero-orb-2"></div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Independent Computational Researcher</div>
+    <h1>Samarth<br><em>Tripathi</em></h1>
+    <div class="hero-tag">Modeling the universe &mdash; from black holes to neural networks.</div>
+
+    <div class="hero-bio">
+      <div class="bio-short">
+        <p>Newton had less. Einstein had more. <strong>Both changed everything.</strong><br><br>
+        Physics has been stagnating. The Standard Model is 50 years old. Dark energy is a placeholder &mdash; we named something we cannot explain and moved on.<br><br>
+        <strong>This is where I work.</strong> I compute because I believe the next person to find the answer will not be waiting for institutional permission to start looking.</p>
+      </div>
+      <div class="bio-long" id="bioLong">
+        <p>The WOW signal was detected in 1977, lasted 72 seconds, and has never been explained. We have been waiting 47 years for a repeat that has not come. Reality is not just beyond our reach. <strong>It is beyond our comprehension by design.</strong> The universe does not owe us clean equations.<br><br>
+        Uncertainty is not the enemy of science. It is the force that drives it &mdash; the same force bending light around a black hole, burying a gravitational wave in noise, scattering four Markov chains across weight space before pulling them all to the same truth.<br><br>
+        Beneath every experiment is the same question: <strong>is there geometry hiding inside the chaos?</strong></p>
+      </div>
+      <button class="bio-toggle" id="bioToggle" onclick="toggleBio()">+ Read full statement</button>
+    </div>
+
+    <div class="hero-ctas">
+      <a href="#results" class="btn btn-primary">&#8595; View Research</a>
+      <a href="https://github.com/samarthtripathi12" target="_blank" class="btn btn-ghost">&#8997; GitHub</a>
+      <a href="/cdn-cgi/l/email-protection#b6c5d7dbd7c4c2de98c2c4dfc6d7c2dedf98d3d2c3f6d1dbd7dfda98d5d9db" class="btn btn-ghost">&#x2709; Contact</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CONTEXT ═══════════════════ -->
+<div class="stats">
+  <div class="stat reveal"><span class="stat-n">8</span><span class="stat-l">Research Projects</span></div>
+  <div class="stat reveal reveal-d1"><span class="stat-n">3</span><span class="stat-l">LaTeX Papers</span></div>
+  <div class="stat reveal reveal-d2"><span class="stat-n">2+</span><span class="stat-l">Years Research</span></div>
+  <div class="stat reveal reveal-d3"><span class="stat-n">0</span><span class="stat-l">Institutional Support</span></div>
+</div>
+
+<!-- narrative bridge — the thesis preview -->
+<div class="narrative-bridge reveal">
+  <div class="nb-inner">
+    <div class="nb-tag">The argument in three acts</div>
+    <p class="nb-text">Every project below is a chapter in the same argument: that <em>geometry hides inside the chaos</em> &mdash; in spacetime, in noise, in the loss landscape of a neural network. The results come first. The simulations prove it moves. The conclusion connects it all.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ ACT I: RESULTS ═══════════════════ -->
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">01 &mdash; Research Results</div>
+      <h2>Signature Projects</h2>
+      <p class="sec-sub">Independent, publication-quality computational research &mdash; plots, metrics, and verified results. Every equation derived from first principles. No institutional resources. No shortcuts.</p>
+    </div>
+    <div class="results-grid">
+      <div class="rc reveal">
+        <div class="rc-thumb"><img src="assets/blackhole_portfolio.png" alt="Black hole photon orbit simulation"></div>
+        <div class="rc-num">PROJECT 01 &mdash; JUL 2023 &ndash; OCT 2023</div>
+        <h3>Black Hole Light Bending</h3>
+        <div class="rc-sub">Computational General Relativity</div>
+        <p>Starting point: the Schwarzschild metric written on paper, and the question of whether photons actually curve the way Einstein predicted. Derived the geodesic equations from first principles &mdash; no textbook shortcuts &mdash; then numerically integrated photon trajectories using 4th-order Runge-Kutta. The photon sphere at r&nbsp;=&nbsp;1.5R&#x209B; emerged from the math, not a lookup. Final verification: sub-10&#8315;&#179; relative error against the analytic deflection angle. Three months from equation derivation to confirmed simulation.</p>
+        <div class="card-tags"><span class="tag">General Relativity</span><span class="tag">RK4</span><span class="tag">Python</span><span class="tag">Geodesics</span></div>
+        <div class="acts">
+          <button onclick="openModal('pdfs/blackhole.pdf','Project 01 — Black Hole Light Bending')" class="ab ab-pdf">&#8599; View PDF</button>
+          <a href="pdfs/blackhole.pdf" download class="ab ab-dl">&#8595; Download</a>
+          <a href="https://github.com/samarthtripathi12/BlackHoleSimulation" target="_blank" class="ab ab-gh">&#8997; GitHub</a>
+        </div>
+      </div>
+      <div class="rc reveal reveal-d1">
+        <div class="rc-thumb"><img src="assets/ligo_portfolio.png" alt="LIGO GW150914 signal extraction"></div>
+        <div class="rc-num">PROJECT 02 &mdash; AUG 2023 &ndash; NOV 2023</div>
+        <h3>Gravitational Wave Denoising</h3>
+        <div class="rc-sub">LIGO Real Data &middot; Signal Processing</div>
+        <p>The raw GW150914 H1 strain file is noise. The gravitational wave &mdash; a spacetime distortion smaller than a proton &mdash; is buried inside it. Built a full analysis pipeline from scratch: derived Fourier transform equations independently, applied FFT spectral decomposition, then designed and tuned a 4th-order Butterworth bandpass filter at 50&ndash;600&nbsp;Hz. The chirp emerges. SNR rises from 3.85 raw to 4.02 filtered. The Nobel Prize audio &mdash; the actual sound of two black holes merging 1.3 billion light years away &mdash; reconstructed entirely in Python.</p>
+        <div class="card-tags"><span class="tag">Signal Processing</span><span class="tag">LIGO H1</span><span class="tag">FFT</span><span class="tag">SciPy</span></div>
+        <div class="acts">
+          <button onclick="openModal('pdfs/ligo.pdf','Project 02 — Gravitational Wave Denoising')" class="ab ab-pdf">&#8599; View PDF</button>
+          <a href="pdfs/ligo.pdf" download class="ab ab-dl">&#8595; Download</a>
+          <a href="https://github.com/samarthtripathi12/GW150914_Denoising" target="_blank" class="ab ab-gh">&#8997; GitHub</a>
+        </div>
+      </div>
+      <div class="rc reveal reveal-d2">
+        <div class="rc-thumb"><img src="assets/neural_portfolio.png" alt="Neural network training results"></div>
+        <div class="rc-num">PROJECT 03 &mdash; OCT 2023 &ndash; JAN 2024</div>
+        <h3>Neural Network From Scratch</h3>
+        <div class="rc-sub">Deep Learning &middot; Algorithmic Foundations</div>
+        <p>No TensorFlow. No PyTorch. No ML frameworks of any kind &mdash; only NumPy and the chain rule. Built every component by hand: forward propagation, backpropagation, gradient descent weight updates, all equations independently derived. The network learns to solve XOR &mdash; a problem that famously broke early perceptrons &mdash; achieving 99.5% accuracy (199/200). Four random seeds trained simultaneously reveal the Markov-chain geometry of gradient descent: different starting points, same attractor basin, same truth.</p>
+        <div class="card-tags"><span class="tag">Backpropagation</span><span class="tag">Gradient Descent</span><span class="tag">NumPy</span><span class="tag">Classification</span></div>
+        <div class="acts">
+          <button onclick="openModal('pdfs/neuralnet.pdf','Project 03 — Neural Network From Scratch')" class="ab ab-pdf">&#8599; View PDF</button>
+          <a href="pdfs/neuralnet.pdf" download class="ab ab-dl">&#8595; Download</a>
+          <a href="https://github.com/samarthtripathi12/neural_networks_training" target="_blank" class="ab ab-gh">&#8997; GitHub</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- bridge: results → simulations -->
+<div class="sec-transition reveal">
+  <p>The math is verified. Now watch it move.</p>
+</div>
+
+<!-- ═══════════════════ ACT II: SIMULATIONS ═══════════════════ -->
+<section id="simulations">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">02 &mdash; Live Simulations</div>
+      <h2>Animated Physics</h2>
+      <p class="sec-sub">Real-time computational simulations &mdash; every frame a solution to a real differential equation. Watch the physics unfold. Then run it yourself.</p>
+    </div>
+
+    <div class="sc reveal">
+      <div class="sc-gif"><img src="assets/blackhole_5panel.gif" alt="Black hole spacetime warping — 5 simultaneous panels"></div>
+      <div class="sc-bar">
+        <span class="sc-bar-tag">01 // Black Hole &middot; Schwarzschild GR</span>
+        <span class="sc-bar-desc">Spacetime warp &middot; GR vs Newton &middot; Bending angle &middot; Photon sphere &middot; Effective potential</span>
+        <span class="sc-live">&#9679; LIVE SIM</span>
+      </div>
+      <div class="sim-strip">
+        <div class="sim-strip-l">
+          <div class="sim-strip-icon">&#9889;</div>
+          <div class="sim-strip-copy">
+            <div class="sim-strip-title">Interactive Simulator Available</div>
+            <div class="sim-strip-desc">Control mass &middot; impact parameter &middot; ray count &mdash; Schwarzschild geodesics computed live via RK4</div>
+          </div>
+        </div>
+        <a href="blackhole-interactive.html" target="_blank" class="ab ab-sim">&#128300; Launch Simulator &rarr;</a>
+      </div>
+      <div class="sc-info">
+        <div>
+          <h3>Spacetime Warping &mdash; 5 Simultaneous Panels</h3>
+          <div class="sc-info-sub">Schwarzschild Metric &middot; RK4 &middot; Geodesic Integration &middot; From First Principles</div>
+          <p>Watch the fabric of spacetime itself curve as mass switches on &mdash; the grid warping is a direct visualization of the Schwarzschild metric ds&#178;&nbsp;=&nbsp;-(1-R&#x209B;/r)c&#178;dt&#178;&nbsp;+&nbsp;dr&#178;/(1-R&#x209B;/r)&nbsp;+&nbsp;r&#178;d&#937;&#178;. Photons follow the curved geodesics in real time. GR bending vs Newtonian side by side reveals why Einstein&rsquo;s 1915 prediction doubled Newton&rsquo;s. Effective potential V(r) shows why the photon sphere exists at r=1.5R&#x209B; as a local maximum.</p>
+          <div class="card-tags"><span class="tag">Schwarzschild Metric</span><span class="tag">Geodesics</span><span class="tag">RK4</span><span class="tag">GR vs Newton</span><span class="tag">Photon Sphere</span></div>
+        </div>
+        <div class="sc-acts">
+          <a href="blackhole-interactive.html" target="_blank" class="ab ab-sim">&#9889; Interactive &rarr;</a>
+          <button onclick="openModal('pdfs/blackhole.pdf','Project 01 — Black Hole Light Bending')" class="ab ab-pdf">&#8599; View PDF</button>
+          <a href="pdfs/blackhole.pdf" download class="ab ab-dl">&#8595; Download</a>
+          <a href="https://github.com/samarthtripathi12/BlackHoleSimulation" target="_blank" class="ab ab-gh">&#8997; GitHub</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc reveal">
+      <div class="sc-gif"><img src="assets/ligo_chirp_5panel.gif" alt="LIGO GW150914 gravitational wave denoising — 5 panels"></div>
+      <div class="sc-bar">
+        <span class="sc-bar-tag">02 // LIGO &middot; GW150914 &middot; Signal Processing</span>
+        <span class="sc-bar-desc">Raw H1 strain &middot; Merger zoom &middot; FFT spectrum &middot; Spectrogram &middot; Chirp waveform</span>
+        <span class="sc-live">&#9679; LIVE SIM</span>
+      </div>
+      <div class="sim-strip">
+        <div class="sim-strip-l">
+          <div class="sim-strip-icon">&#9889;</div>
+          <div class="sim-strip-copy">
+            <div class="sim-strip-title">Interactive Signal Processor Available</div>
+            <div class="sim-strip-desc">Drag filter cutoffs &middot; adjust order &middot; watch chirp emerge from noise &middot; SNR updates live</div>
+          </div>
+        </div>
+        <a href="ligo-interactive.html" target="_blank" class="ab ab-sim">&#128300; Launch Processor &rarr;</a>
+      </div>
+      <div class="sc-audio">
+        <div class="sc-audio-label">&#9654; GW150914 &mdash; The Sound of Spacetime &middot; Hear two black holes merge 1.3 billion light years away</div>
+        <audio controls preload="auto"><source src="assets/ligo_chirp.wav" type="audio/wav"></audio>
+        <div class="sc-audio-sub">Filtered strain h(t) played as audio &middot; 35&rarr;150&nbsp;Hz inspiral &middot; merger burst &middot; ringdown &middot; reconstructed from Post-Newtonian physics &middot; presented at the 2017 Nobel Prize ceremony</div>
+      </div>
+      <div class="sc-info">
+        <div>
+          <h3>GW150914 Signal Extraction &mdash; 5 Simultaneous Panels</h3>
+          <div class="sc-info-sub">LIGO H1 Real Data &middot; FFT &middot; Butterworth Filter &middot; SNR &middot; Spectrogram</div>
+          <p>Watch a gravitational wave emerge from detector noise in real time. Band-pass filter tightens from 2000&nbsp;Hz to 50&ndash;600&nbsp;Hz, progressively stripping noise. The spectrogram reveals the chirp&rsquo;s time-frequency structure. The audio is the filtered strain h(t) &mdash; the same sound LIGO played at the 2017 Nobel Prize announcement, reconstructed from Post-Newtonian physics entirely in Python. SNR peaks at merger: raw 3.85 &rarr; filtered 4.02.</p>
+          <div class="card-tags"><span class="tag">LIGO H1</span><span class="tag">FFT</span><span class="tag">Butterworth</span><span class="tag">Spectrogram</span><span class="tag">SNR</span><span class="tag">Nobel Audio</span></div>
+        </div>
+        <div class="sc-acts">
+          <a href="ligo-interactive.html" target="_blank" class="ab ab-sim">&#9889; Interactive &rarr;</a>
+          <button onclick="openModal('pdfs/ligo.pdf','Project 02 — Gravitational Wave Denoising')" class="ab ab-pdf">&#8599; View PDF</button>
+          <a href="pdfs/ligo.pdf" download class="ab ab-dl">&#8595; Download</a>
+          <a href="https://github.com/samarthtripathi12/GW150914_Denoising" target="_blank" class="ab ab-gh">&#8997; GitHub</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc reveal">
+      <div class="sc-gif"><img src="assets/neural_5panel.gif" alt="Neural network learning simulation — 5 simultaneous panels"></div>
+      <div class="sc-bar">
+        <span class="sc-bar-tag">03 // Neural Network &middot; From Scratch &middot; NumPy</span>
+        <span class="sc-bar-desc">Loss curves &middot; Decision boundary &middot; Forward pass &middot; Weight matrix &middot; Gradient magnitude</span>
+        <span class="sc-live">&#9679; LIVE SIM</span>
+      </div>
+      <div class="sim-strip">
+        <div class="sim-strip-l">
+          <div class="sim-strip-icon">&#9889;</div>
+          <div class="sim-strip-copy">
+            <div class="sim-strip-title">Probability is the Arena &mdash; Interactive Simulator</div>
+            <div class="sim-strip-desc">4 Markov chains &middot; live loss landscape &middot; watch uncertainty collapse into convergence</div>
+          </div>
+        </div>
+        <a href="neural-interactive.html" target="_blank" class="ab ab-sim">&#128300; Launch Simulator &rarr;</a>
+      </div>
+      <div class="sc-info">
+        <div>
+          <h3>Neural Network Learning &mdash; 5 Simultaneous Panels</h3>
+          <div class="sc-info-sub">2&rarr;6&rarr;4&rarr;1 Architecture &middot; Backpropagation &middot; Probabilistic &middot; Markov-like</div>
+          <p>Watch a neural network learn to solve XOR across 500 epochs &mdash; built entirely in NumPy with no ML frameworks. Four random seeds trained simultaneously reveal the probabilistic, Markov-chain-like nature of gradient descent: different initializations, different trajectories, same convergence. The forward pass panel shows activation values flowing live through each neuron. The gradient magnitude panel visualizes the backpropagation signal &mdash; chain rule made visible.</p>
+          <div class="card-tags"><span class="tag">Backpropagation</span><span class="tag">Chain Rule</span><span class="tag">4 Seeds</span><span class="tag">Stochastic</span><span class="tag">NumPy Only</span><span class="tag">Markov Chains</span></div>
+        </div>
+        <div class="sc-acts">
+          <a href="neural-interactive.html" target="_blank" class="ab ab-sim">&#9889; Interactive &rarr;</a>
+          <button onclick="openModal('pdfs/neuralnet.pdf','Project 03 — Neural Network From Scratch')" class="ab ab-pdf">&#8599; View PDF</button>
+          <a href="pdfs/neuralnet.pdf" download class="ab ab-dl">&#8595; Download</a>
+          <a href="https://github.com/samarthtripathi12/neural_networks_training" target="_blank" class="ab ab-gh">&#8997; GitHub</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════ THESIS (earned) ═══════════════════ -->
+<div class="thesis-section reveal">
+  <div class="thesis-inner">
+    <div class="thesis-label">Research Philosophy</div>
+    <div class="thesis-quote">
+      &ldquo;Uncertainty is not the enemy of science. It is the <em>force</em> that drives it &mdash; and the code the universe runs on.&rdquo;
+    </div>
+    <div class="thesis-attr">Samarth Tripathi &middot; Independent Computational Researcher &middot; 2023&ndash;2026</div>
+  </div>
+</div>
+
+<!-- bridge: thesis → breadth -->
+<div class="sec-transition reveal">
+  <p>Three signature projects. Five more below. All connected by the same question.</p>
+</div>
+
+<!-- ═══════════════════ ACT III: BREADTH ═══════════════════ -->
+<section id="supporting">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">03 &mdash; Supporting Research</div>
+      <h2>Additional Work</h2>
+      <p class="sec-sub">Five further projects demonstrating breadth across physics, finance, and data science. The same first-principles methodology, applied wider.</p>
+    </div>
+    <div class="sup-grid">
+      <div class="spc reveal">
+        <div class="spc-num">PROJECT 04 &mdash; NOV 2023 &ndash; FEB 2024</div>
+        <h3>Chaotic Systems &amp; Sensitivity</h3>
+        <p>The double pendulum and Lorenz attractor share one property: they are deterministic systems that are practically unpredictable. Simulated both from scratch and computed Lyapunov exponents numerically to quantify exactly how fast nearby trajectories diverge. The Lorenz system produces a strange attractor with fractal basin boundaries &mdash; structure hiding inside apparent randomness. The key insight after three months of work: determinism and unpredictability are not opposites. They coexist in the same equations. Chaos is geometry you haven&rsquo;t found yet.</p>
+        <a href="https://github.com/samarthtripathi12/chaotic-systems-sensitivity" target="_blank" class="spc-gh">&#8997; chaotic-systems-sensitivity &rarr;</a>
+      </div>
+      <div class="spc reveal reveal-d1">
+        <div class="spc-num">PROJECT 05 &mdash; JAN 2024 &ndash; APR 2024</div>
+        <h3>Monte Carlo Simulation of Physical Laws</h3>
+        <p>The core question: can randomness verify truth? Built a stochastic simulation framework that recovers foundational physical laws &mdash; Maxwell-Boltzmann velocity distributions, ideal gas pressure, thermodynamic equilibria &mdash; purely through random sampling and convergence analysis, with no analytic derivation. At high enough trial counts, the noise collapses into certainty. The result is not just a numerical method &mdash; it is a proof that the laws of physics are attractors that randomness converges toward, given enough iterations.</p>
+        <a href="https://github.com/samarthtripathi12/montecarlo_physics_simulations" target="_blank" class="spc-gh">&#8997; montecarlo_physics_simulations &rarr;</a>
+      </div>
+      <div class="spc reveal">
+        <div class="spc-num">PROJECT 06 &mdash; MAR 2024 &ndash; JUL 2024</div>
+        <h3>Quantitative Finance via Monte Carlo</h3>
+        <p>The same stochastic framework from physics, applied to financial derivatives. Simulated thousands of asset price paths using geometric Brownian motion, then priced European call and put options by averaging discounted payoffs across paths. Cross-validated every result against the Black-Scholes closed-form solution. The deeper result was the one that mattered: thermodynamic diffusion and financial uncertainty are formally identical. The same Wiener process that describes a particle in a fluid governs the price of an option. Physics and finance share an equation.</p>
+        <a href="https://github.com/samarthtripathi12/mc_option_pricing" target="_blank" class="spc-gh">&#8997; mc_option_pricing &rarr;</a>
+      </div>
+      <div class="spc reveal reveal-d1">
+        <div class="spc-num">PROJECT 07 &mdash; AUG 2024 &ndash; OCT 2024</div>
+        <h3>Data Science &mdash; Global Temperature Anomaly</h3>
+        <p>A century of NASA GISS global surface temperature anomaly data. The goal: extract the long-term warming signal from year-to-year noise without cherry-picking the window. Applied linear and polynomial regression, moving-average smoothing, and residual analysis. Result: a warming trend of ~0.19&deg;C per decade since 1975 &mdash; recovered independently from raw data, consistent with published IPCC figures. The exercise was as much about methodology as outcome: letting data speak without selecting the frame that confirms the answer you want.</p>
+        <a href="https://github.com/samarthtripathi12/real_world_insight" target="_blank" class="spc-gh">&#8997; real_world_insight &rarr;</a>
+      </div>
+      <div class="spc reveal">
+        <div class="spc-num">PROJECT 08 &mdash; NOV 2024 &ndash; FEB 2025</div>
+        <h3>Energy-Inspired Portfolio Optimization</h3>
+        <p>Portfolio optimization reframed as a physical energy minimisation problem. Assets modelled as particles in a potential energy landscape defined by expected return and covariance; the optimizer &mdash; built on stochastic differential equations analogous to simulated annealing &mdash; seeks the lowest-energy configuration. The approach recovers the Markowitz efficient frontier from first principles. The geometric insight: mean-variance optimization is not a financial formula. It is a statement about a curved surface in return-risk space, and the optimal portfolio is simply its lowest point.</p>
+        <a href="https://github.com/samarthtripathi12/energy_inspired_portfolio_optimization" target="_blank" class="spc-gh">&#8997; energy_inspired_portfolio_optimization &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CONCLUSION: INVITATION ═══════════════════ -->
+<section id="contact">
+  <div class="contact-c reveal">
+    <div class="sec-tag" style="justify-content:center;margin-bottom:0.6rem;">04 &mdash; Get in Touch</div>
+    <h2>The Work Continues</h2>
+    <p class="contact-lead">
+      Eight projects in. Zero institutional support. The question hasn&rsquo;t changed:<br>
+      <em>Is there geometry hiding inside the chaos?</em><br><br>
+      If you think so too &mdash; let&rsquo;s talk.
+    </p>
+    <p class="contact-sub">Open to research collaborations &middot; university admissions &middot; mentorship</p>
+    <div class="clinks">
+      <a href="/cdn-cgi/l/email-protection#c2b1a3afa3b0b6aaecb6b0abb2a3b6aaabeca7a6b782a5afa3abaeeca1adaf" class="clink">
+        <div class="clink-icon">&#x2709;</div>
+        <span><span class="__cf_email__" data-cfemail="2a594b474b585e42045e58435a4b5e4243044f4e5f6a4d474b434604494547">[email&#160;protected]</span></span>
+      </a>
+      <a href="https://github.com/samarthtripathi12" target="_blank" class="clink">
+        <div class="clink-icon">&#8997;</div>
+        <span>github.com/samarthtripathi12</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>&copy; 2026 Samarth Tripathi &mdash; Computational Research Portfolio &middot; No institutional affiliation.</span>
+  <div class="foot-links">
+    <a href="#results">Results</a>
+    <a href="#simulations">Simulations</a>
+    <a href="https://github.com/samarthtripathi12" target="_blank">GitHub</a>
+    <a href="/cdn-cgi/l/email-protection#8bf8eae6eaf9ffe3a5fff9e2fbeaffe3e2a5eeeffecbece6eae2e7a5e8e4e6">Email</a>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  /* MODAL */
+  function openModal(path,title){
+    const url='https://samarthtripathi12.github.io/'+path;
+    document.getElementById('modalFrame').src='https://docs.google.com/viewer?url='+encodeURIComponent(url)+'&embedded=true';
+    document.getElementById('modalTitle').textContent=title;
+    document.getElementById('modalDl').href=path;
+    document.getElementById('modal').classList.add('on');
+    document.body.style.overflow='hidden';
+  }
+  function closeModal(){
+    document.getElementById('modal').classList.remove('on');
+    document.getElementById('modalFrame').src='';
+    document.body.style.overflow='';
+  }
+  document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+  /* MOBILE MENU */
+  var burger=document.getElementById('burger');
+  var mobileMenu=document.getElementById('mobileMenu');
+  burger.addEventListener('click',function(){
+    var open=mobileMenu.classList.toggle('open');
+    burger.classList.toggle('open',open);
+    document.body.style.overflow=open?'hidden':'';
+  });
+  function closeMobile(){
+    mobileMenu.classList.remove('open');
+    burger.classList.remove('open');
+    document.body.style.overflow='';
+  }
+
+  /* BIO TOGGLE */
+  function toggleBio(){
+    var long=document.getElementById('bioLong');
+    var btn=document.getElementById('bioToggle');
+    var visible=long.classList.toggle('visible');
+    btn.textContent=visible?'− Collapse':'+ Read full statement';
+  }
+
+  /* SCROLL REVEAL */
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  },{threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(function(el){observer.observe(el);});
+</script>
+</body>
+</html>
